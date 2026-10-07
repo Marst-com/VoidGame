@@ -1,195 +1,356 @@
 import * as TZ from "./trizas.js";
 
-const canvas = document.getElementById("game");
+const canvas =
+    document.getElementById("game");
 
-const renderer = new TZ.Renderer(canvas);
-renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
+const renderer =
+    new TZ.Renderer(canvas, {
+        antialias: true
+    });
 
-const scene = new TZ.Scene();
-
-const camera = new TZ.PerspectiveCamera(
-  70,
-  innerWidth / innerHeight,
-  0.1,
-  1000
+renderer.setPixelRatio(
+    Math.min(devicePixelRatio, 1.5)
 );
 
-camera.position.set(0, 3, 8);
+const scene =
+    new TZ.Scene();
 
-const ambient = new TZ.AmbientLight(0xffffff, 0.35);
-scene.add(ambient);
+const camera =
+    new TZ.PerspectiveCamera(
+        70,
+        innerWidth / innerHeight,
+        0.1,
+        500
+    );
 
-const sun = new TZ.DirectionalLight(0xffffff, 1);
-sun.position.set(10, 20, 10);
-scene.add(sun);
+camera.position.set(
+    0,
+    5,
+    12
+);
 
 
 /* =========================
-   PLANET
+   WORLD
 ========================= */
 
-const groundGeometry = new TZ.PlaneGeometry(200, 200);
+const ground =
+    new TZ.Mesh(
+        new TZ.PlaneGeometry(180, 180),
+        new TZ.MeshBasicMaterial({
+            color: 0x202a35
+        })
+    );
 
-const groundMaterial = new TZ.MeshBasicMaterial({
-  color: 0x17202c
-});
-
-const ground = new TZ.Mesh(
-  groundGeometry,
-  groundMaterial
-);
-
-ground.rotation.x = -Math.PI / 2;
+ground.rotation.x =
+    -Math.PI / 2;
 
 scene.add(ground);
 
 
 /* =========================
-   BUILDINGS
+   BUILDING
 ========================= */
 
-function createBuilding(x, z) {
+function building(x, z) {
 
-  const group = new TZ.Group();
+    const group =
+        new TZ.Group();
 
-  const base = new TZ.Mesh(
-    new TZ.BoxGeometry(6, 3, 6),
-    new TZ.MeshBasicMaterial({
-      color: 0x536273
-    })
-  );
+    const base =
+        new TZ.Mesh(
+            new TZ.BoxGeometry(7, 3, 7),
+            new TZ.MeshBasicMaterial({
+                color: 0x667382
+            })
+        );
 
-  base.position.y = 1.5;
+    base.position.y = 1.5;
 
-  const roof = new TZ.Mesh(
-    new TZ.BoxGeometry(4, 2, 4),
-    new TZ.MeshBasicMaterial({
-      color: 0x91a8bd
-    })
-  );
 
-  roof.position.y = 4;
+    const roof =
+        new TZ.Mesh(
+            new TZ.BoxGeometry(5, 1, 5),
+            new TZ.MeshBasicMaterial({
+                color: 0x9eafbd
+            })
+        );
 
-  const antenna = new TZ.Mesh(
-    new TZ.BoxGeometry(.25, 4, .25),
-    new TZ.MeshBasicMaterial({
-      color: 0x65d7ff
-    })
-  );
+    roof.position.y = 3.5;
 
-  antenna.position.y = 7;
 
-  group.add(base);
-  group.add(roof);
-  group.add(antenna);
+    const antenna =
+        new TZ.Mesh(
+            new TZ.CylinderGeometry(
+                .15,
+                .15,
+                5,
+                10
+            ),
+            new TZ.MeshBasicMaterial({
+                color: 0x48d8ff
+            })
+        );
 
-  group.position.set(x, 0, z);
+    antenna.position.y = 6;
 
-  scene.add(group);
+
+    group.add(
+        base,
+        roof,
+        antenna
+    );
+
+    group.position.set(
+        x,
+        0,
+        z
+    );
+
+    scene.add(group);
 }
 
-createBuilding(12, -8);
-createBuilding(-15, -20);
+building(15, -10);
+building(-18, -25);
 
 
 /* =========================
    ROCKS
 ========================= */
 
-for (let i = 0; i < 80; i++) {
+for (let i = 0; i < 70; i++) {
 
-  const rock = new TZ.Mesh(
-    new TZ.BoxGeometry(
-      0.5 + Math.random() * 1.5,
-      0.4 + Math.random() * 1.2,
-      0.5 + Math.random() * 1.5
-    ),
-    new TZ.MeshBasicMaterial({
-      color: 0x59616b
-    })
-  );
+    const rock =
+        new TZ.Mesh(
+            new TZ.BoxGeometry(
+                .5 + Math.random() * 1.5,
+                .4 + Math.random(),
+                .5 + Math.random() * 1.5
+            ),
+            new TZ.MeshBasicMaterial({
+                color:
+                    0x4d5661
+            })
+        );
 
-  rock.position.set(
-    (Math.random() - .5) * 120,
-    .4,
-    (Math.random() - .5) * 120
-  );
+    rock.position.set(
+        (Math.random() - .5) * 120,
+        .5,
+        (Math.random() - .5) * 120
+    );
 
-  rock.rotation.y = Math.random() * Math.PI;
+    rock.rotation.y =
+        Math.random() * Math.PI;
 
-  scene.add(rock);
+    scene.add(rock);
 }
+
+
+/* =========================
+   CRYSTALS
+========================= */
+
+for (let i = 0; i < 30; i++) {
+
+    const crystal =
+        new TZ.Mesh(
+            new TZ.CylinderGeometry(
+                .25,
+                .08,
+                1.5,
+                6
+            ),
+            new TZ.MeshBasicMaterial({
+                color: 0x55dfff
+            })
+        );
+
+    crystal.position.set(
+        (Math.random() - .5) * 100,
+        .8,
+        (Math.random() - .5) * 100
+    );
+
+    scene.add(crystal);
+}
+
+
+/* =========================
+   PLAYER
+========================= */
+
+const player =
+    new TZ.Group();
+
+const body =
+    new TZ.Mesh(
+        new TZ.BoxGeometry(
+            1.2,
+            1.8,
+            .8
+        ),
+        new TZ.MeshBasicMaterial({
+            color: 0xdfe8ef
+        })
+    );
+
+body.position.y = 1;
+
+const helmet =
+    new TZ.Mesh(
+        new TZ.SphereGeometry(
+            .48,
+            12,
+            8
+        ),
+        new TZ.MeshBasicMaterial({
+            color: 0xbfd8e8
+        })
+    );
+
+helmet.position.y = 2.15;
+
+player.add(
+    body,
+    helmet
+);
+
+player.position.set(
+    0,
+    0,
+    5
+);
+
+scene.add(player);
 
 
 /* =========================
    INPUT
 ========================= */
 
-const keys = {};
-
-addEventListener("keydown", e => {
-  keys[e.code] = true;
-});
-
-addEventListener("keyup", e => {
-  keys[e.code] = false;
-});
+const keyboard =
+    new TZ.Keyboard();
 
 let yaw = 0;
 
-canvas.addEventListener("pointermove", e => {
+canvas.addEventListener(
+    "pointermove",
+    e => {
 
-  if (e.buttons !== 1) return;
+        if (e.buttons !== 1) {
+            return;
+        }
 
-  yaw -= e.movementX * 0.003;
-
-  camera.rotation.y = yaw;
-});
+        yaw -=
+            e.movementX * .003;
+    }
+);
 
 
 /* =========================
-   LOOP
+   CAMERA
 ========================= */
 
-let last = performance.now();
+function updateCamera() {
 
-function loop(now) {
+    const distance = 7;
 
-  const dt = Math.min(
-    (now - last) / 1000,
-    0.05
-  );
+    camera.position.x =
+        player.position.x -
+        Math.sin(yaw) * distance;
 
-  last = now;
+    camera.position.z =
+        player.position.z -
+        Math.cos(yaw) * distance;
 
-  const speed = 8 * dt;
+    camera.position.y =
+        player.position.y + 4;
 
-  if (keys.KeyW) {
-    camera.position.x -= Math.sin(yaw) * speed;
-    camera.position.z -= Math.cos(yaw) * speed;
-  }
+    camera.rotation.y =
+        yaw;
 
-  if (keys.KeyS) {
-    camera.position.x += Math.sin(yaw) * speed;
-    camera.position.z += Math.cos(yaw) * speed;
-  }
-
-  if (keys.KeyA) {
-    camera.position.x -= Math.cos(yaw) * speed;
-    camera.position.z += Math.sin(yaw) * speed;
-  }
-
-  if (keys.KeyD) {
-    camera.position.x += Math.cos(yaw) * speed;
-    camera.position.z -= Math.sin(yaw) * speed;
-  }
-
-  renderer.render(scene, camera);
-
-  requestAnimationFrame(loop);
+    camera.rotation.x =
+        -0.15;
 }
 
-requestAnimationFrame(loop);
+
+/* =========================
+   MOVEMENT
+========================= */
+
+const clock =
+    new TZ.Clock();
+
+function update() {
+
+    const dt =
+        clock.tick();
+
+    const speed =
+        8 * dt;
+
+    if (
+        keyboard.down("KeyW") ||
+        keyboard.down("ArrowUp")
+    ) {
+
+        player.position.x -=
+            Math.sin(yaw) * speed;
+
+        player.position.z -=
+            Math.cos(yaw) * speed;
+    }
+
+    if (
+        keyboard.down("KeyS") ||
+        keyboard.down("ArrowDown")
+    ) {
+
+        player.position.x +=
+            Math.sin(yaw) * speed;
+
+        player.position.z +=
+            Math.cos(yaw) * speed;
+    }
+
+    if (
+        keyboard.down("KeyA") ||
+        keyboard.down("ArrowLeft")
+    ) {
+
+        player.position.x -=
+            Math.cos(yaw) * speed;
+
+        player.position.z +=
+            Math.sin(yaw) * speed;
+    }
+
+    if (
+        keyboard.down("KeyD") ||
+        keyboard.down("ArrowRight")
+    ) {
+
+        player.position.x +=
+            Math.cos(yaw) * speed;
+
+        player.position.z -=
+            Math.sin(yaw) * speed;
+    }
+
+
+    updateCamera();
+
+    renderer.render(
+        scene,
+        camera
+    );
+
+    requestAnimationFrame(
+        update
+    );
+}
+
+requestAnimationFrame(update);
 
 
 /* =========================
@@ -198,15 +359,20 @@ requestAnimationFrame(loop);
 
 function resize() {
 
-  camera.aspect = innerWidth / innerHeight;
-  camera.updateProjectionMatrix();
+    camera.aspect =
+        innerWidth / innerHeight;
 
-  renderer.setSize(
-    innerWidth,
-    innerHeight
-  );
+    camera.updateProjectionMatrix();
+
+    renderer.setSize(
+        innerWidth,
+        innerHeight
+    );
 }
 
-addEventListener("resize", resize);
+addEventListener(
+    "resize",
+    resize
+);
 
 resize();
