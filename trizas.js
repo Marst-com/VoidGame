@@ -1,986 +1,1341 @@
 /* =========================================================
-   TriZas V0.1
+   TriZas V0.2
    Lightweight WebGL 3D Engine
-   ASTERIA Edition
 ========================================================= */
+
+const DEG = Math.PI / 180;
 
 
 /* =========================================================
-   MATH
+   Vector3
 ========================================================= */
 
 export class Vector3 {
 
-  constructor(x = 0, y = 0, z = 0) {
-    this.x = x;
-    this.y = y;
-    this.z = z;
-  }
-
-  set(x, y, z) {
-    this.x = x;
-    this.y = y;
-    this.z = z;
-    return this;
-  }
-
-  copy(v) {
-    this.x = v.x;
-    this.y = v.y;
-    this.z = v.z;
-    return this;
-  }
-
-  clone() {
-    return new Vector3(
-      this.x,
-      this.y,
-      this.z
-    );
-  }
-
-  add(v) {
-    this.x += v.x;
-    this.y += v.y;
-    this.z += v.z;
-    return this;
-  }
-
-  sub(v) {
-    this.x -= v.x;
-    this.y -= v.y;
-    this.z -= v.z;
-    return this;
-  }
-
-  multiplyScalar(s) {
-    this.x *= s;
-    this.y *= s;
-    this.z *= s;
-    return this;
-  }
-
-  length() {
-    return Math.sqrt(
-      this.x * this.x +
-      this.y * this.y +
-      this.z * this.z
-    );
-  }
-
-  normalize() {
-
-    const l = this.length();
-
-    if (l > 0) {
-      this.multiplyScalar(1 / l);
+    constructor(x = 0, y = 0, z = 0) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
     }
 
-    return this;
-  }
+    set(x, y, z) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        return this;
+    }
+
+    copy(v) {
+        this.x = v.x;
+        this.y = v.y;
+        this.z = v.z;
+        return this;
+    }
+
+    clone() {
+        return new Vector3(this.x, this.y, this.z);
+    }
+
+    add(v) {
+        this.x += v.x;
+        this.y += v.y;
+        this.z += v.z;
+        return this;
+    }
+
+    sub(v) {
+        this.x -= v.x;
+        this.y -= v.y;
+        this.z -= v.z;
+        return this;
+    }
+
+    multiplyScalar(v) {
+        this.x *= v;
+        this.y *= v;
+        this.z *= v;
+        return this;
+    }
+
+    length() {
+        return Math.hypot(this.x, this.y, this.z);
+    }
+
+    normalize() {
+        const l = this.length();
+
+        if (l > 0) {
+            this.multiplyScalar(1 / l);
+        }
+
+        return this;
+    }
+
+    distanceTo(v) {
+        return Math.hypot(
+            this.x - v.x,
+            this.y - v.y,
+            this.z - v.z
+        );
+    }
 }
 
 
 /* =========================================================
-   MATRIX
+   Matrix4
 ========================================================= */
 
 export class Matrix4 {
 
-  constructor() {
-    this.elements = new Float32Array(16);
-    this.identity();
-  }
-
-  identity() {
-
-    const e = this.elements;
-
-    e.fill(0);
-
-    e[0] = 1;
-    e[5] = 1;
-    e[10] = 1;
-    e[15] = 1;
-
-    return this;
-  }
-
-  perspective(
-    fov,
-    aspect,
-    near,
-    far
-  ) {
-
-    const e = this.elements;
-
-    const f =
-      1 / Math.tan(
-        fov * Math.PI / 360
-      );
-
-    e.fill(0);
-
-    e[0] = f / aspect;
-    e[5] = f;
-
-    e[10] =
-      (far + near) /
-      (near - far);
-
-    e[11] = -1;
-
-    e[14] =
-      (2 * far * near) /
-      (near - far);
-
-    return this;
-  }
-
-  multiply(a, b) {
-
-    const ae = a.elements;
-    const be = b.elements;
-    const te = this.elements;
-
-    for (let i = 0; i < 4; i++) {
-
-      const ai0 = ae[i];
-      const ai1 = ae[i + 4];
-      const ai2 = ae[i + 8];
-      const ai3 = ae[i + 12];
-
-      te[i] =
-        ai0 * be[0] +
-        ai1 * be[1] +
-        ai2 * be[2] +
-        ai3 * be[3];
-
-      te[i + 4] =
-        ai0 * be[4] +
-        ai1 * be[5] +
-        ai2 * be[6] +
-        ai3 * be[7];
-
-      te[i + 8] =
-        ai0 * be[8] +
-        ai1 * be[9] +
-        ai2 * be[10] +
-        ai3 * be[11];
-
-      te[i + 12] =
-        ai0 * be[12] +
-        ai1 * be[13] +
-        ai2 * be[14] +
-        ai3 * be[15];
+    constructor() {
+        this.elements = new Float32Array(16);
+        this.identity();
     }
 
-    return this;
-  }
+    identity() {
 
-  translation(x, y, z) {
+        const e = this.elements;
 
-    this.identity();
+        e.fill(0);
 
-    const e = this.elements;
+        e[0] = 1;
+        e[5] = 1;
+        e[10] = 1;
+        e[15] = 1;
 
-    e[12] = x;
-    e[13] = y;
-    e[14] = z;
+        return this;
+    }
 
-    return this;
-  }
+    copy(m) {
+        this.elements.set(m.elements);
+        return this;
+    }
 
-  rotationY(r) {
+    multiply(a, b) {
 
-    this.identity();
+        const ae = a.elements;
+        const be = b.elements;
+        const te = this.elements;
 
-    const c = Math.cos(r);
-    const s = Math.sin(r);
+        const a00 = ae[0];
+        const a01 = ae[1];
+        const a02 = ae[2];
+        const a03 = ae[3];
 
-    const e = this.elements;
+        const a10 = ae[4];
+        const a11 = ae[5];
+        const a12 = ae[6];
+        const a13 = ae[7];
 
-    e[0] = c;
-    e[2] = -s;
-    e[8] = s;
-    e[10] = c;
+        const a20 = ae[8];
+        const a21 = ae[9];
+        const a22 = ae[10];
+        const a23 = ae[11];
 
-    return this;
-  }
+        const a30 = ae[12];
+        const a31 = ae[13];
+        const a32 = ae[14];
+        const a33 = ae[15];
 
-  rotationX(r) {
+        const b0 = be[0];
+        const b1 = be[1];
+        const b2 = be[2];
+        const b3 = be[3];
 
-    this.identity();
+        te[0] =
+            a00 * b0 +
+            a10 * b1 +
+            a20 * b2 +
+            a30 * b3;
 
-    const c = Math.cos(r);
-    const s = Math.sin(r);
+        te[1] =
+            a01 * b0 +
+            a11 * b1 +
+            a21 * b2 +
+            a31 * b3;
 
-    const e = this.elements;
+        te[2] =
+            a02 * b0 +
+            a12 * b1 +
+            a22 * b2 +
+            a32 * b3;
 
-    e[5] = c;
-    e[6] = s;
-    e[9] = -s;
-    e[10] = c;
+        te[3] =
+            a03 * b0 +
+            a13 * b1 +
+            a23 * b2 +
+            a33 * b3;
 
-    return this;
-  }
 
-  scale(x, y, z) {
+        b0 = be[4];
+        b1 = be[5];
+        b2 = be[6];
+        b3 = be[7];
 
-    this.identity();
+        te[4] =
+            a00 * b0 +
+            a10 * b1 +
+            a20 * b2 +
+            a30 * b3;
 
-    const e = this.elements;
+        te[5] =
+            a01 * b0 +
+            a11 * b1 +
+            a21 * b2 +
+            a31 * b3;
 
-    e[0] = x;
-    e[5] = y;
-    e[10] = z;
+        te[6] =
+            a02 * b0 +
+            a12 * b1 +
+            a22 * b2 +
+            a32 * b3;
 
-    return this;
-  }
+        te[7] =
+            a03 * b0 +
+            a13 * b1 +
+            a23 * b2 +
+            a33 * b3;
+
+
+        b0 = be[8];
+        b1 = be[9];
+        b2 = be[10];
+        b3 = be[11];
+
+        te[8] =
+            a00 * b0 +
+            a10 * b1 +
+            a20 * b2 +
+            a30 * b3;
+
+        te[9] =
+            a01 * b0 +
+            a11 * b1 +
+            a21 * b2 +
+            a31 * b3;
+
+        te[10] =
+            a02 * b0 +
+            a12 * b1 +
+            a22 * b2 +
+            a32 * b3;
+
+        te[11] =
+            a03 * b0 +
+            a13 * b1 +
+            a23 * b2 +
+            a33 * b3;
+
+
+        b0 = be[12];
+        b1 = be[13];
+        b2 = be[14];
+        b3 = be[15];
+
+        te[12] =
+            a00 * b0 +
+            a10 * b1 +
+            a20 * b2 +
+            a30 * b3;
+
+        te[13] =
+            a01 * b0 +
+            a11 * b1 +
+            a21 * b2 +
+            a31 * b3;
+
+        te[14] =
+            a02 * b0 +
+            a12 * b1 +
+            a22 * b2 +
+            a32 * b3;
+
+        te[15] =
+            a03 * b0 +
+            a13 * b1 +
+            a23 * b2 +
+            a33 * b3;
+
+        return this;
+    }
+
+    translation(x, y, z) {
+
+        this.identity();
+
+        this.elements[12] = x;
+        this.elements[13] = y;
+        this.elements[14] = z;
+
+        return this;
+    }
+
+    scale(x, y, z) {
+
+        this.identity();
+
+        this.elements[0] = x;
+        this.elements[5] = y;
+        this.elements[10] = z;
+
+        return this;
+    }
+
+    rotationX(r) {
+
+        this.identity();
+
+        const c = Math.cos(r);
+        const s = Math.sin(r);
+
+        this.elements[5] = c;
+        this.elements[6] = s;
+        this.elements[9] = -s;
+        this.elements[10] = c;
+
+        return this;
+    }
+
+    rotationY(r) {
+
+        this.identity();
+
+        const c = Math.cos(r);
+        const s = Math.sin(r);
+
+        this.elements[0] = c;
+        this.elements[2] = -s;
+        this.elements[8] = s;
+        this.elements[10] = c;
+
+        return this;
+    }
+
+    rotationZ(r) {
+
+        this.identity();
+
+        const c = Math.cos(r);
+        const s = Math.sin(r);
+
+        this.elements[0] = c;
+        this.elements[1] = s;
+        this.elements[4] = -s;
+        this.elements[5] = c;
+
+        return this;
+    }
+
+    perspective(fov, aspect, near, far) {
+
+        const f =
+            1 / Math.tan(fov * DEG / 2);
+
+        const e = this.elements;
+
+        e.fill(0);
+
+        e[0] = f / aspect;
+        e[5] = f;
+
+        e[10] =
+            (far + near) /
+            (near - far);
+
+        e[11] = -1;
+
+        e[14] =
+            (2 * far * near) /
+            (near - far);
+
+        return this;
+    }
 }
 
 
 /* =========================================================
-   OBJECT
+   Object3D
 ========================================================= */
 
 export class Object3D {
 
-  constructor() {
+    constructor() {
 
-    this.position = new Vector3();
+        this.position = new Vector3();
 
-    this.rotation = new Vector3();
+        this.rotation = new Vector3();
 
-    this.scale = new Vector3(
-      1,
-      1,
-      1
-    );
+        this.scale = new Vector3(1, 1, 1);
 
-    this.children = [];
+        this.children = [];
 
-    this.parent = null;
-  }
+        this.parent = null;
 
-  add(object) {
-
-    if (object.parent) {
-      object.parent.remove(object);
+        this.visible = true;
     }
 
-    object.parent = this;
+    add(...objects) {
 
-    this.children.push(object);
+        for (const object of objects) {
 
-    return this;
-  }
+            if (object.parent) {
+                object.parent.remove(object);
+            }
 
-  remove(object) {
+            object.parent = this;
+            this.children.push(object);
+        }
 
-    const i =
-      this.children.indexOf(object);
-
-    if (i !== -1) {
-
-      this.children.splice(i, 1);
-
-      object.parent = null;
+        return this;
     }
 
-    return this;
-  }
+    remove(object) {
+
+        const i =
+            this.children.indexOf(object);
+
+        if (i >= 0) {
+            this.children.splice(i, 1);
+            object.parent = null;
+        }
+
+        return this;
+    }
 }
 
 
 /* =========================================================
-   SCENE
+   Scene
 ========================================================= */
 
 export class Scene extends Object3D {
 
-  constructor() {
+    constructor() {
 
-    super();
+        super();
 
-    this.background = [0.015, 0.025, 0.05, 1];
-  }
+        this.background = 0x050914;
+    }
 }
 
 
 /* =========================================================
-   CAMERA
+   Camera
 ========================================================= */
 
 export class PerspectiveCamera extends Object3D {
 
-  constructor(
-    fov = 70,
-    aspect = 1,
-    near = .1,
-    far = 1000
-  ) {
+    constructor(
+        fov = 70,
+        aspect = 1,
+        near = 0.1,
+        far = 1000
+    ) {
 
-    super();
+        super();
 
-    this.fov = fov;
-    this.aspect = aspect;
-    this.near = near;
-    this.far = far;
+        this.fov = fov;
+        this.aspect = aspect;
+        this.near = near;
+        this.far = far;
 
-    this.projectionMatrix =
-      new Matrix4();
+        this.projectionMatrix =
+            new Matrix4();
 
-    this.updateProjectionMatrix();
-  }
+        this.updateProjectionMatrix();
+    }
 
-  updateProjectionMatrix() {
+    updateProjectionMatrix() {
 
-    this.projectionMatrix.perspective(
-      this.fov,
-      this.aspect,
-      this.near,
-      this.far
-    );
-  }
+        this.projectionMatrix.perspective(
+            this.fov,
+            this.aspect,
+            this.near,
+            this.far
+        );
+    }
 }
 
 
 /* =========================================================
-   GEOMETRY
+   Geometry
 ========================================================= */
 
 export class Geometry {
 
-  constructor() {
+    constructor() {
 
-    this.vertices = [];
-    this.indices = [];
-  }
+        this.vertices = [];
+        this.indices = [];
+    }
 }
 
 
 export class BoxGeometry extends Geometry {
 
-  constructor(w = 1, h = 1, d = 1) {
+    constructor(w = 1, h = 1, d = 1) {
 
-    super();
+        super();
 
-    const x = w / 2;
-    const y = h / 2;
-    const z = d / 2;
+        const x = w / 2;
+        const y = h / 2;
+        const z = d / 2;
 
-    this.vertices = [
+        this.vertices = [
 
-      -x,-y,-z,
-       x,-y,-z,
-       x, y,-z,
-      -x, y,-z,
+            -x,-y,-z,
+             x,-y,-z,
+             x, y,-z,
+            -x, y,-z,
 
-      -x,-y, z,
-       x,-y, z,
-       x, y, z,
-      -x, y, z
-    ];
+            -x,-y, z,
+             x,-y, z,
+             x, y, z,
+            -x, y, z
+        ];
 
-    this.indices = [
+        this.indices = [
 
-      0,1,2,
-      0,2,3,
+            0,1,2,
+            0,2,3,
 
-      4,6,5,
-      4,7,6,
+            4,6,5,
+            4,7,6,
 
-      0,4,5,
-      0,5,1,
+            0,4,5,
+            0,5,1,
 
-      3,2,6,
-      3,6,7,
+            3,2,6,
+            3,6,7,
 
-      1,5,6,
-      1,6,2,
+            1,5,6,
+            1,6,2,
 
-      0,3,7,
-      0,7,4
-    ];
-  }
+            0,3,7,
+            0,7,4
+        ];
+    }
 }
 
 
 export class PlaneGeometry extends Geometry {
 
-  constructor(w = 1, d = 1) {
+    constructor(w = 1, d = 1) {
 
-    super();
+        super();
 
-    const x = w / 2;
-    const z = d / 2;
+        const x = w / 2;
+        const z = d / 2;
 
-    this.vertices = [
+        this.vertices = [
+            -x,0,-z,
+             x,0,-z,
+             x,0, z,
+            -x,0, z
+        ];
 
-      -x,0,-z,
-       x,0,-z,
-       x,0, z,
-      -x,0, z
-    ];
+        this.indices = [
+            0,1,2,
+            0,2,3
+        ];
+    }
+}
 
-    this.indices = [
-      0,1,2,
-      0,2,3
-    ];
-  }
+
+export class SphereGeometry extends Geometry {
+
+    constructor(
+        radius = 1,
+        widthSegments = 16,
+        heightSegments = 10
+    ) {
+
+        super();
+
+        for (
+            let y = 0;
+            y <= heightSegments;
+            y++
+        ) {
+
+            const v =
+                y / heightSegments;
+
+            const phi =
+                v * Math.PI;
+
+            for (
+                let x = 0;
+                x <= widthSegments;
+                x++
+            ) {
+
+                const u =
+                    x / widthSegments;
+
+                const theta =
+                    u * Math.PI * 2;
+
+                const sx =
+                    -radius *
+                    Math.cos(theta) *
+                    Math.sin(phi);
+
+                const sy =
+                    radius *
+                    Math.cos(phi);
+
+                const sz =
+                    radius *
+                    Math.sin(theta) *
+                    Math.sin(phi);
+
+                this.vertices.push(
+                    sx, sy, sz
+                );
+            }
+        }
+
+        for (
+            let y = 0;
+            y < heightSegments;
+            y++
+        ) {
+
+            for (
+                let x = 0;
+                x < widthSegments;
+                x++
+            ) {
+
+                const a =
+                    y * (widthSegments + 1) + x;
+
+                const b = a + widthSegments + 1;
+
+                this.indices.push(
+                    a, b, a + 1,
+                    b, b + 1, a + 1
+                );
+            }
+        }
+    }
+}
+
+
+export class CylinderGeometry extends Geometry {
+
+    constructor(
+        radius = 1,
+        height = 2,
+        segments = 16
+    ) {
+
+        super();
+
+        for (
+            let y = 0;
+            y <= 1;
+            y++
+        ) {
+
+            const py =
+                (y - .5) * height;
+
+            for (
+                let i = 0;
+                i <= segments;
+                i++
+            ) {
+
+                const a =
+                    i / segments * Math.PI * 2;
+
+                this.vertices.push(
+                    Math.cos(a) * radius,
+                    py,
+                    Math.sin(a) * radius
+                );
+            }
+        }
+
+        for (
+            let i = 0;
+            i < segments;
+            i++
+        ) {
+
+            const a = i;
+            const b = i + segments + 1;
+
+            this.indices.push(
+                a, b, a + 1,
+                b, b + 1, a + 1
+            );
+        }
+
+        const bottom =
+            this.vertices.length / 3;
+
+        this.vertices.push(
+            0, -height / 2, 0
+        );
+
+        const top =
+            bottom + 1;
+
+        this.vertices.push(
+            0, height / 2, 0
+        );
+
+        for (
+            let i = 0;
+            i < segments;
+            i++
+        ) {
+
+            const n = i + 1;
+
+            this.indices.push(
+                bottom,
+                n,
+                i
+            );
+
+            this.indices.push(
+                top,
+                segments + 1 + i,
+                segments + 1 + n
+            );
+        }
+    }
 }
 
 
 /* =========================================================
-   MATERIAL
+   Material
 ========================================================= */
 
 export class MeshBasicMaterial {
 
-  constructor(options = {}) {
+    constructor(options = {}) {
 
-    this.color =
-      options.color ??
-      0xffffff;
-  }
+        this.color =
+            options.color ?? 0xffffff;
+
+        this.opacity =
+            options.opacity ?? 1;
+    }
 }
 
 
 /* =========================================================
-   MESH
+   Mesh / Group
 ========================================================= */
 
 export class Mesh extends Object3D {
 
-  constructor(
-    geometry,
-    material
-  ) {
+    constructor(geometry, material) {
 
-    super();
+        super();
 
-    this.geometry = geometry;
-    this.material = material;
-  }
+        this.geometry = geometry;
+
+        this.material =
+            material ??
+            new MeshBasicMaterial();
+    }
 }
 
-
-/* =========================================================
-   GROUP
-========================================================= */
 
 export class Group extends Object3D {
 
-  constructor() {
-    super();
-  }
+    constructor() {
+        super();
+    }
 }
 
 
 /* =========================================================
-   LIGHTS
+   Lights
 ========================================================= */
 
 export class AmbientLight extends Object3D {
 
-  constructor(
-    color = 0xffffff,
-    intensity = 1
-  ) {
+    constructor(
+        color = 0xffffff,
+        intensity = 1
+    ) {
 
-    super();
+        super();
 
-    this.color = color;
-    this.intensity = intensity;
-  }
+        this.color = color;
+        this.intensity = intensity;
+    }
 }
 
 
 export class DirectionalLight extends Object3D {
 
-  constructor(
-    color = 0xffffff,
-    intensity = 1
-  ) {
+    constructor(
+        color = 0xffffff,
+        intensity = 1
+    ) {
 
-    super();
+        super();
 
-    this.color = color;
-    this.intensity = intensity;
-  }
+        this.color = color;
+        this.intensity = intensity;
+    }
 }
 
 
 /* =========================================================
-   COLOR
+   Renderer
 ========================================================= */
 
-function colorToRGB(hex) {
+function hexColor(hex) {
 
-  return [
+    return [
 
-    ((hex >> 16) & 255) / 255,
+        ((hex >> 16) & 255) / 255,
 
-    ((hex >> 8) & 255) / 255,
+        ((hex >> 8) & 255) / 255,
 
-    (hex & 255) / 255
-  ];
+        (hex & 255) / 255
+    ];
 }
 
 
-/* =========================================================
-   RENDERER
-========================================================= */
+function shader(gl, type, source) {
+
+    const s =
+        gl.createShader(type);
+
+    gl.shaderSource(s, source);
+
+    gl.compileShader(s);
+
+    if (
+        !gl.getShaderParameter(
+            s,
+            gl.COMPILE_STATUS
+        )
+    ) {
+
+        throw new Error(
+            gl.getShaderInfoLog(s)
+        );
+    }
+
+    return s;
+}
+
 
 export class Renderer {
 
-  constructor(canvas) {
+    constructor(canvas, options = {}) {
 
-    this.canvas = canvas;
+        this.canvas = canvas;
 
-    this.gl =
-      canvas.getContext(
-        "webgl",
-        {
-          antialias: true,
-          alpha: false,
-          powerPreference: "high-performance"
+        this.gl =
+            canvas.getContext(
+                "webgl",
+                {
+                    antialias:
+                        options.antialias ?? true,
+
+                    alpha: false,
+
+                    powerPreference:
+                        "high-performance"
+                }
+            );
+
+        if (!this.gl) {
+            throw new Error(
+                "TriZas: WebGL을 사용할 수 없습니다."
+            );
         }
-      );
 
-    if (!this.gl) {
-      throw new Error(
-        "TriZas: WebGL을 사용할 수 없습니다."
-      );
+        this.pixelRatio = 1;
+
+        this.program =
+            this.createProgram();
+
+        const gl = this.gl;
+
+        this.positionLocation =
+            gl.getAttribLocation(
+                this.program,
+                "aPosition"
+            );
+
+        this.matrixLocation =
+            gl.getUniformLocation(
+                this.program,
+                "uMatrix"
+            );
+
+        this.colorLocation =
+            gl.getUniformLocation(
+                this.program,
+                "uColor"
+            );
+
+        gl.enable(gl.DEPTH_TEST);
+
+        gl.enable(gl.CULL_FACE);
+
+        gl.cullFace(gl.BACK);
     }
 
-    this.pixelRatio = 1;
 
-    this.program =
-      this.createProgram();
+    createProgram() {
 
-    this.locations = {
+        const gl = this.gl;
 
-      position:
-        this.gl.getAttribLocation(
-          this.program,
-          "aPosition"
-        ),
+        const vertex = shader(
+            gl,
+            gl.VERTEX_SHADER,
 
-      matrix:
-        this.gl.getUniformLocation(
-          this.program,
-          "uMatrix"
-        ),
+            `
+            attribute vec3 aPosition;
 
-      color:
-        this.gl.getUniformLocation(
-          this.program,
-          "uColor"
-        )
-    };
+            uniform mat4 uMatrix;
 
-    this.gl.enable(
-      this.gl.DEPTH_TEST
-    );
-  }
+            void main() {
 
-
-  setPixelRatio(value) {
-
-    this.pixelRatio = value;
-  }
-
-
-  setSize(width, height) {
-
-    this.canvas.width =
-      width * this.pixelRatio;
-
-    this.canvas.height =
-      height * this.pixelRatio;
-
-    this.canvas.style.width =
-      width + "px";
-
-    this.canvas.style.height =
-      height + "px";
-
-    this.gl.viewport(
-      0,
-      0,
-      this.canvas.width,
-      this.canvas.height
-    );
-  }
-
-
-  createShader(type, source) {
-
-    const gl = this.gl;
-
-    const shader =
-      gl.createShader(type);
-
-    gl.shaderSource(
-      shader,
-      source
-    );
-
-    gl.compileShader(shader);
-
-    if (
-      !gl.getShaderParameter(
-        shader,
-        gl.COMPILE_STATUS
-      )
-    ) {
-
-      throw new Error(
-        gl.getShaderInfoLog(shader)
-      );
-    }
-
-    return shader;
-  }
-
-
-  createProgram() {
-
-    const vertexSource = `
-
-      attribute vec3 aPosition;
-
-      uniform mat4 uMatrix;
-
-      void main() {
-
-        gl_Position =
-          uMatrix *
-          vec4(aPosition, 1.0);
-      }
-
-    `;
-
-
-    const fragmentSource = `
-
-      precision mediump float;
-
-      uniform vec3 uColor;
-
-      void main() {
-
-        gl_FragColor =
-          vec4(
-            uColor,
-            1.0
-          );
-      }
-
-    `;
-
-
-    const vs =
-      this.createShader(
-        this.gl.VERTEX_SHADER,
-        vertexSource
-      );
-
-    const fs =
-      this.createShader(
-        this.gl.FRAGMENT_SHADER,
-        fragmentSource
-      );
-
-    const program =
-      this.gl.createProgram();
-
-    this.gl.attachShader(
-      program,
-      vs
-    );
-
-    this.gl.attachShader(
-      program,
-      fs
-    );
-
-    this.gl.linkProgram(
-      program
-    );
-
-    if (
-      !this.gl.getProgramParameter(
-        program,
-        this.gl.LINK_STATUS
-      )
-    ) {
-
-      throw new Error(
-        this.gl.getProgramInfoLog(
-          program
-        )
-      );
-    }
-
-    return program;
-  }
-
-
-  createBuffer(mesh) {
-
-    const gl = this.gl;
-
-    const position =
-      gl.createBuffer();
-
-    gl.bindBuffer(
-      gl.ARRAY_BUFFER,
-      position
-    );
-
-    gl.bufferData(
-      gl.ARRAY_BUFFER,
-      new Float32Array(
-        mesh.geometry.vertices
-      ),
-      gl.STATIC_DRAW
-    );
-
-
-    const index =
-      gl.createBuffer();
-
-    gl.bindBuffer(
-      gl.ELEMENT_ARRAY_BUFFER,
-      index
-    );
-
-    gl.bufferData(
-      gl.ELEMENT_ARRAY_BUFFER,
-      new Uint16Array(
-        mesh.geometry.indices
-      ),
-      gl.STATIC_DRAW
-    );
-
-    mesh.__positionBuffer =
-      position;
-
-    mesh.__indexBuffer =
-      index;
-
-    mesh.__indexCount =
-      mesh.geometry.indices.length;
-  }
-
-
-  render(scene, camera) {
-
-    const gl = this.gl;
-
-    gl.clearColor(
-      scene.background[0],
-      scene.background[1],
-      scene.background[2],
-      scene.background[3]
-    );
-
-    gl.clear(
-      gl.COLOR_BUFFER_BIT |
-      gl.DEPTH_BUFFER_BIT
-    );
-
-    gl.useProgram(
-      this.program
-    );
-
-    const view =
-      new Matrix4();
-
-    const rx =
-      new Matrix4()
-        .rotationX(
-          -camera.rotation.x
+                gl_Position =
+                    uMatrix *
+                    vec4(aPosition, 1.0);
+            }
+            `
         );
 
-    const ry =
-      new Matrix4()
-        .rotationY(
-          -camera.rotation.y
+
+        const fragment = shader(
+            gl,
+            gl.FRAGMENT_SHADER,
+
+            `
+            precision mediump float;
+
+            uniform vec3 uColor;
+
+            void main() {
+
+                gl_FragColor =
+                    vec4(uColor, 1.0);
+            }
+            `
         );
 
-    const tr =
-      new Matrix4()
-        .translation(
-          -camera.position.x,
-          -camera.position.y,
-          -camera.position.z
+
+        const program =
+            gl.createProgram();
+
+        gl.attachShader(
+            program,
+            vertex
         );
 
-    let viewMatrix =
-      new Matrix4();
+        gl.attachShader(
+            program,
+            fragment
+        );
 
-    viewMatrix.multiply(
-      ry,
-      tr
-    );
-
-    viewMatrix.multiply(
-      rx,
-      viewMatrix
-    );
-
-    const projection =
-      camera.projectionMatrix;
-
-
-    const draw =
-      (object, parentMatrix = null) => {
+        gl.linkProgram(program);
 
         if (
-          object instanceof Mesh
+            !gl.getProgramParameter(
+                program,
+                gl.LINK_STATUS
+            )
         ) {
 
-          if (!object.__positionBuffer) {
-            this.createBuffer(object);
-          }
-
-          const translation =
-            new Matrix4()
-              .translation(
-                object.position.x,
-                object.position.y,
-                object.position.z
-              );
-
-          const rotation =
-            new Matrix4()
-              .rotationY(
-                object.rotation.y
-              );
-
-          const scale =
-            new Matrix4()
-              .scale(
-                object.scale.x,
-                object.scale.y,
-                object.scale.z
-              );
-
-          let model =
-            new Matrix4();
-
-          model.multiply(
-            translation,
-            rotation
-          );
-
-          model.multiply(
-            model,
-            scale
-          );
-
-
-          if (parentMatrix) {
-
-            const world =
-              new Matrix4();
-
-            world.multiply(
-              parentMatrix,
-              model
+            throw new Error(
+                gl.getProgramInfoLog(program)
             );
+        }
 
-            model = world;
-          }
-
-
-          let pv =
-            new Matrix4();
-
-          pv.multiply(
-            viewMatrix,
-            model
-          );
-
-          let final =
-            new Matrix4();
-
-          final.multiply(
-            projection,
-            pv
-          );
+        return program;
+    }
 
 
-          gl.uniformMatrix4fv(
-            this.locations.matrix,
-            false,
-            final.elements
-          );
+    setPixelRatio(value) {
+
+        this.pixelRatio =
+            Math.max(1, value);
+    }
 
 
-          const rgb =
-            colorToRGB(
-              object.material.color
-            );
+    setSize(width, height) {
 
-          gl.uniform3fv(
-            this.locations.color,
-            rgb
-          );
+        const ratio =
+            this.pixelRatio;
 
+        this.canvas.width =
+            Math.floor(width * ratio);
 
-          gl.bindBuffer(
-            gl.ARRAY_BUFFER,
-            object.__positionBuffer
-          );
+        this.canvas.height =
+            Math.floor(height * ratio);
 
-          gl.enableVertexAttribArray(
-            this.locations.position
-          );
+        this.canvas.style.width =
+            width + "px";
 
-          gl.vertexAttribPointer(
-            this.locations.position,
-            3,
-            gl.FLOAT,
-            false,
+        this.canvas.style.height =
+            height + "px";
+
+        this.gl.viewport(
             0,
-            0
-          );
+            0,
+            this.canvas.width,
+            this.canvas.height
+        );
+    }
 
 
-          gl.bindBuffer(
+    createGPUData(mesh) {
+
+        const gl = this.gl;
+
+        mesh.__vertexBuffer =
+            gl.createBuffer();
+
+        gl.bindBuffer(
+            gl.ARRAY_BUFFER,
+            mesh.__vertexBuffer
+        );
+
+        gl.bufferData(
+            gl.ARRAY_BUFFER,
+            new Float32Array(
+                mesh.geometry.vertices
+            ),
+            gl.STATIC_DRAW
+        );
+
+
+        mesh.__indexBuffer =
+            gl.createBuffer();
+
+        gl.bindBuffer(
             gl.ELEMENT_ARRAY_BUFFER,
-            object.__indexBuffer
-          );
+            mesh.__indexBuffer
+        );
 
-          gl.drawElements(
-            gl.TRIANGLES,
-            object.__indexCount,
-            gl.UNSIGNED_SHORT,
-            0
-          );
-        }
+        gl.bufferData(
+            gl.ELEMENT_ARRAY_BUFFER,
+            new Uint16Array(
+                mesh.geometry.indices
+            ),
+            gl.STATIC_DRAW
+        );
 
-
-        for (
-          const child of object.children
-        ) {
-
-          draw(
-            child,
-            object instanceof Scene
-              ? null
-              : parentMatrix
-          );
-        }
-      };
+        mesh.__indexCount =
+            mesh.geometry.indices.length;
+    }
 
 
-    draw(scene);
-  }
+    render(scene, camera) {
+
+        const gl = this.gl;
+
+        gl.clearColor(
+            ...hexColor(scene.background),
+            1
+        );
+
+        gl.clear(
+            gl.COLOR_BUFFER_BIT |
+            gl.DEPTH_BUFFER_BIT
+        );
+
+        gl.useProgram(
+            this.program
+        );
+
+
+        const rx =
+            new Matrix4()
+                .rotationX(
+                    -camera.rotation.x
+                );
+
+        const ry =
+            new Matrix4()
+                .rotationY(
+                    -camera.rotation.y
+                );
+
+        const rz =
+            new Matrix4()
+                .rotationZ(
+                    -camera.rotation.z
+                );
+
+        const cameraTranslation =
+            new Matrix4()
+                .translation(
+                    -camera.position.x,
+                    -camera.position.y,
+                    -camera.position.z
+                );
+
+
+        let view =
+            new Matrix4();
+
+        view.multiply(
+            ry,
+            cameraTranslation
+        );
+
+        view.multiply(
+            rx,
+            view
+        );
+
+        view.multiply(
+            rz,
+            view
+        );
+
+
+        const drawObject =
+            (object, parentWorld = null) => {
+
+                if (!object.visible) {
+                    return;
+                }
+
+
+                let world =
+                    new Matrix4();
+
+                const translation =
+                    new Matrix4()
+                        .translation(
+                            object.position.x,
+                            object.position.y,
+                            object.position.z
+                        );
+
+                const rotationY =
+                    new Matrix4()
+                        .rotationY(
+                            object.rotation.y
+                        );
+
+                const rotationX =
+                    new Matrix4()
+                        .rotationX(
+                            object.rotation.x
+                        );
+
+                const rotationZ =
+                    new Matrix4()
+                        .rotationZ(
+                            object.rotation.z
+                        );
+
+                const scale =
+                    new Matrix4()
+                        .scale(
+                            object.scale.x,
+                            object.scale.y,
+                            object.scale.z
+                        );
+
+
+                world.multiply(
+                    translation,
+                    rotationY
+                );
+
+                world.multiply(
+                    world,
+                    rotationX
+                );
+
+                world.multiply(
+                    world,
+                    rotationZ
+                );
+
+                world.multiply(
+                    world,
+                    scale
+                );
+
+
+                if (parentWorld) {
+
+                    const combined =
+                        new Matrix4();
+
+                    combined.multiply(
+                        parentWorld,
+                        world
+                    );
+
+                    world = combined;
+                }
+
+
+                if (
+                    object instanceof Mesh
+                ) {
+
+                    if (!object.__vertexBuffer) {
+                        this.createGPUData(object);
+                    }
+
+
+                    let vm =
+                        new Matrix4();
+
+                    vm.multiply(
+                        view,
+                        world
+                    );
+
+
+                    let final =
+                        new Matrix4();
+
+                    final.multiply(
+                        camera.projectionMatrix,
+                        vm
+                    );
+
+
+                    gl.uniformMatrix4fv(
+                        this.matrixLocation,
+                        false,
+                        final.elements
+                    );
+
+
+                    gl.uniform3fv(
+                        this.colorLocation,
+                        hexColor(
+                            object.material.color
+                        )
+                    );
+
+
+                    gl.bindBuffer(
+                        gl.ARRAY_BUFFER,
+                        object.__vertexBuffer
+                    );
+
+                    gl.enableVertexAttribArray(
+                        this.positionLocation
+                    );
+
+                    gl.vertexAttribPointer(
+                        this.positionLocation,
+                        3,
+                        gl.FLOAT,
+                        false,
+                        0,
+                        0
+                    );
+
+
+                    gl.bindBuffer(
+                        gl.ELEMENT_ARRAY_BUFFER,
+                        object.__indexBuffer
+                    );
+
+
+                    gl.drawElements(
+                        gl.TRIANGLES,
+                        object.__indexCount,
+                        gl.UNSIGNED_SHORT,
+                        0
+                    );
+                }
+
+
+                for (
+                    const child of object.children
+                ) {
+
+                    drawObject(
+                        child,
+                        world
+                    );
+                }
+            };
+
+
+        drawObject(scene);
+    }
+}
+
+
+/* =========================================================
+   Input
+========================================================= */
+
+export class Keyboard {
+
+    constructor() {
+
+        this.keys = new Set();
+
+        addEventListener(
+            "keydown",
+            e => this.keys.add(e.code)
+        );
+
+        addEventListener(
+            "keyup",
+            e => this.keys.delete(e.code)
+        );
+    }
+
+    down(code) {
+        return this.keys.has(code);
+    }
+}
+
+
+/* =========================================================
+   Clock
+========================================================= */
+
+export class Clock {
+
+    constructor() {
+
+        this.last =
+            performance.now();
+
+        this.delta = 0;
+
+        this.elapsed = 0;
+    }
+
+    tick() {
+
+        const now =
+            performance.now();
+
+        this.delta =
+            Math.min(
+                (now - this.last) / 1000,
+                0.05
+            );
+
+        this.last = now;
+
+        this.elapsed +=
+            this.delta;
+
+        return this.delta;
+    }
 }
