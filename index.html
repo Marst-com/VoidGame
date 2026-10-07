@@ -1,0 +1,3460 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width,
+             initial-scale=1,
+             maximum-scale=1,
+             user-scalable=no">
+
+<title>V100 — DEEP SPACE</title>
+
+<style>
+
+/* =========================================================
+   RESET
+========================================================= */
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    -webkit-tap-highlight-color:transparent;
+}
+
+html,
+body{
+    width:100%;
+    height:100%;
+    overflow:hidden;
+
+    background:#02040a;
+
+    font-family:
+        Arial,
+        Pretendard,
+        sans-serif;
+
+    color:white;
+
+    user-select:none;
+    touch-action:none;
+}
+
+/* =========================================================
+   CANVAS
+========================================================= */
+
+#game{
+    position:fixed;
+
+    left:0;
+    top:0;
+
+    width:100%;
+    height:100%;
+
+    display:block;
+
+    touch-action:none;
+
+    z-index:1;
+}
+
+/* =========================================================
+   START
+========================================================= */
+
+#startScreen{
+
+    position:fixed;
+
+    inset:0;
+
+    z-index:1000;
+
+    display:flex;
+
+    align-items:center;
+    justify-content:center;
+
+    background:
+        radial-gradient(
+            circle at 50% 40%,
+            rgba(55,120,255,.18),
+            transparent 38%
+        ),
+        linear-gradient(
+            180deg,
+            #02040b,
+            #050914,
+            #02040a
+        );
+}
+
+.startBox{
+
+    width:min(620px,90vw);
+
+    text-align:center;
+
+    padding:40px 25px;
+}
+
+.logo{
+
+    font-size:
+        clamp(
+            55px,
+            13vw,
+            110px
+        );
+
+    font-weight:900;
+
+    letter-spacing:.16em;
+
+    background:
+        linear-gradient(
+            120deg,
+            #fff,
+            #7edcff,
+            #927dff
+        );
+
+    -webkit-background-clip:text;
+
+    color:transparent;
+
+    text-shadow:
+        0 0 50px
+        rgba(80,170,255,.3);
+}
+
+.version{
+
+    margin-top:5px;
+
+    color:#6c82a4;
+
+    font-size:12px;
+
+    letter-spacing:.35em;
+}
+
+.startInfo{
+
+    margin:
+        35px auto;
+
+    color:#a8b8d0;
+
+    line-height:1.9;
+
+    font-size:14px;
+}
+
+#startButton{
+
+    appearance:none;
+
+    border:1px solid
+        rgba(120,210,255,.55);
+
+    outline:none;
+
+    color:white;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(55,125,220,.8),
+            rgba(75,55,160,.8)
+        );
+
+    padding:
+        17px 45px;
+
+    border-radius:13px;
+
+    font-size:15px;
+
+    font-weight:900;
+
+    letter-spacing:.15em;
+
+    cursor:pointer;
+
+    box-shadow:
+        0 0 35px
+        rgba(50,130,255,.25);
+
+    touch-action:manipulation;
+}
+
+#startButton:active{
+
+    transform:scale(.94);
+}
+
+/* =========================================================
+   ERROR
+========================================================= */
+
+#errorScreen{
+
+    display:none;
+
+    position:fixed;
+
+    inset:0;
+
+    z-index:2000;
+
+    align-items:center;
+    justify-content:center;
+
+    background:#050509;
+
+    padding:30px;
+}
+
+#errorBox{
+
+    max-width:600px;
+
+    padding:30px;
+
+    border:
+        1px solid
+        rgba(255,80,100,.3);
+
+    border-radius:15px;
+
+    background:
+        rgba(30,10,15,.8);
+}
+
+#errorBox h2{
+
+    color:#ff7188;
+
+    margin-bottom:15px;
+}
+
+#errorText{
+
+    color:#b9a8ad;
+
+    white-space:pre-wrap;
+
+    font-family:monospace;
+
+    font-size:12px;
+
+    line-height:1.6;
+}
+
+/* =========================================================
+   HUD
+========================================================= */
+
+#hud{
+
+    position:fixed;
+
+    inset:0;
+
+    z-index:10;
+
+    pointer-events:none;
+}
+
+#status{
+
+    position:absolute;
+
+    top:16px;
+    left:16px;
+
+    width:225px;
+
+    padding:14px;
+
+    border:
+        1px solid
+        rgba(130,190,255,.2);
+
+    border-radius:14px;
+
+    background:
+        rgba(3,10,22,.72);
+
+    backdrop-filter:
+        blur(10px);
+}
+
+.statusTitle{
+
+    font-size:10px;
+
+    color:#6d86a9;
+
+    letter-spacing:.25em;
+
+    margin-bottom:10px;
+}
+
+.stat{
+
+    margin:7px 0;
+}
+
+.statRow{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    color:#b9c9dd;
+
+    font-size:11px;
+
+    margin-bottom:4px;
+}
+
+.bar{
+
+    width:100%;
+
+    height:5px;
+
+    background:#111b2a;
+
+    border-radius:5px;
+
+    overflow:hidden;
+}
+
+.fill{
+
+    height:100%;
+
+    width:100%;
+
+    transition:
+        width .15s;
+}
+
+#healthFill{
+
+    background:#ff5575;
+
+    box-shadow:
+        0 0 10px #ff5575;
+}
+
+#oxygenFill{
+
+    background:#54d7ff;
+
+    box-shadow:
+        0 0 10px #54d7ff;
+}
+
+#batteryFill{
+
+    background:#9d83ff;
+
+    box-shadow:
+        0 0 10px #9d83ff;
+}
+
+#coordinates{
+
+    position:absolute;
+
+    right:16px;
+
+    top:16px;
+
+    padding:
+        10px 13px;
+
+    background:
+        rgba(3,10,22,.72);
+
+    border:
+        1px solid
+        rgba(130,190,255,.2);
+
+    border-radius:12px;
+
+    color:#9db1cb;
+
+    font-size:11px;
+}
+
+#mission{
+
+    position:absolute;
+
+    top:20px;
+
+    left:50%;
+
+    transform:
+        translateX(-50%);
+
+    padding:
+        9px 17px;
+
+    border:
+        1px solid
+        rgba(120,190,255,.2);
+
+    border-radius:20px;
+
+    background:
+        rgba(3,10,22,.55);
+
+    color:#b4d5f2;
+
+    font-size:11px;
+
+    white-space:nowrap;
+}
+
+#message{
+
+    position:absolute;
+
+    left:50%;
+
+    bottom:32%;
+
+    transform:
+        translateX(-50%)
+        translateY(10px);
+
+    padding:
+        12px 20px;
+
+    border:
+        1px solid
+        rgba(120,210,255,.3);
+
+    border-radius:12px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(25,80,150,.8),
+            rgba(60,35,130,.8)
+        );
+
+    font-size:12px;
+
+    font-weight:bold;
+
+    opacity:0;
+
+    transition:
+        opacity .25s,
+        transform .25s;
+}
+
+#message.show{
+
+    opacity:1;
+
+    transform:
+        translateX(-50%)
+        translateY(0);
+}
+
+/* =========================================================
+   CROSSHAIR
+========================================================= */
+
+#crosshair{
+
+    position:absolute;
+
+    left:50%;
+    top:50%;
+
+    width:22px;
+    height:22px;
+
+    transform:
+        translate(-50%,-50%);
+
+    opacity:.55;
+}
+
+#crosshair::before{
+
+    content:"";
+
+    position:absolute;
+
+    left:10px;
+    top:2px;
+
+    width:1px;
+    height:18px;
+
+    background:#bdeaff;
+
+    box-shadow:
+        0 0 7px #5bd4ff;
+}
+
+#crosshair::after{
+
+    content:"";
+
+    position:absolute;
+
+    left:2px;
+    top:10px;
+
+    width:18px;
+    height:1px;
+
+    background:#bdeaff;
+
+    box-shadow:
+        0 0 7px #5bd4ff;
+}
+
+/* =========================================================
+   JOYSTICK
+========================================================= */
+
+#controls{
+
+    position:fixed;
+
+    inset:0;
+
+    z-index:50;
+
+    pointer-events:none;
+}
+
+#joystick{
+
+    position:absolute;
+
+    left:25px;
+    bottom:25px;
+
+    width:145px;
+    height:145px;
+
+    border-radius:50%;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(75,145,230,.13),
+            rgba(30,70,130,.06)
+        );
+
+    border:
+        1px solid
+        rgba(140,205,255,.28);
+
+    box-shadow:
+        inset 0 0 35px
+        rgba(70,160,255,.08);
+
+    pointer-events:auto;
+
+    touch-action:none;
+}
+
+#stick{
+
+    position:absolute;
+
+    left:50%;
+    top:50%;
+
+    width:60px;
+    height:60px;
+
+    transform:
+        translate(-50%,-50%);
+
+    border-radius:50%;
+
+    background:
+        radial-gradient(
+            circle at 35% 30%,
+            #b7efff,
+            #4382c8 55%,
+            #172b52
+        );
+
+    border:
+        2px solid
+        rgba(220,245,255,.45);
+
+    box-shadow:
+        0 0 25px
+        rgba(70,190,255,.4);
+
+    pointer-events:none;
+}
+
+/* =========================================================
+   ACTION BUTTONS
+========================================================= */
+
+#actions{
+
+    position:absolute;
+
+    right:25px;
+    bottom:25px;
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:12px;
+
+    pointer-events:auto;
+}
+
+.action{
+
+    width:68px;
+    height:68px;
+
+    border-radius:50%;
+
+    border:
+        1px solid
+        rgba(145,210,255,.35);
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(65,130,215,.5),
+            rgba(10,25,52,.82)
+        );
+
+    color:#e1f5ff;
+
+    font-weight:900;
+
+    font-size:11px;
+
+    box-shadow:
+        0 0 20px
+        rgba(60,150,255,.15);
+
+    touch-action:manipulation;
+
+    cursor:pointer;
+}
+
+.action:active{
+
+    transform:scale(.9);
+}
+
+/* =========================================================
+   SCAN EFFECT
+========================================================= */
+
+.scanRing{
+
+    position:fixed;
+
+    left:50%;
+    top:50%;
+
+    width:20px;
+    height:20px;
+
+    border:
+        2px solid
+        rgba(80,220,255,.8);
+
+    border-radius:50%;
+
+    pointer-events:none;
+
+    z-index:8;
+
+    transform:
+        translate(-50%,-50%)
+        scale(.2);
+
+    animation:
+        scanExpand 1.2s
+        ease-out
+        forwards;
+}
+
+@keyframes scanExpand{
+
+    0%{
+
+        opacity:1;
+
+        transform:
+            translate(-50%,-50%)
+            scale(.2);
+    }
+
+    100%{
+
+        opacity:0;
+
+        transform:
+            translate(-50%,-50%)
+            scale(35);
+    }
+}
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media(max-width:700px){
+
+    #status{
+
+        width:190px;
+
+        transform:scale(.88);
+
+        transform-origin:
+            top left;
+    }
+
+    #coordinates{
+
+        transform:scale(.88);
+
+        transform-origin:
+            top right;
+    }
+
+    #mission{
+
+        top:95px;
+
+        max-width:70vw;
+
+        overflow:hidden;
+
+        text-overflow:ellipsis;
+    }
+}
+
+</style>
+</head>
+
+<body>
+
+<canvas id="game"></canvas>
+
+<!-- ========================================================
+     START SCREEN
+======================================================== -->
+
+<div id="startScreen">
+
+    <div class="startBox">
+
+        <div class="logo">
+            V100
+        </div>
+
+        <div class="version">
+            DEEP SPACE // EXPLORATION
+        </div>
+
+        <div class="startInfo">
+
+            미지의 행성에 착륙했다.<br>
+            탐사하고, 발견하고, 살아남아라.<br><br>
+
+            <b>WASD</b> 이동 ·
+            <b>DRAG</b> 카메라 ·
+            <b>SPACE</b> 점프
+
+        </div>
+
+        <button id="startButton">
+            START EXPLORATION
+        </button>
+
+    </div>
+
+</div>
+
+<!-- ========================================================
+     ERROR
+======================================================== -->
+
+<div id="errorScreen">
+
+    <div id="errorBox">
+
+        <h2>
+            V100 ENGINE ERROR
+        </h2>
+
+        <div id="errorText"></div>
+
+    </div>
+
+</div>
+
+<!-- ========================================================
+     HUD
+======================================================== -->
+
+<div id="hud">
+
+    <div id="status">
+
+        <div class="statusTitle">
+            EXPLORER // V100
+        </div>
+
+        <div class="stat">
+
+            <div class="statRow">
+                <span>HEALTH</span>
+                <span id="healthText">100</span>
+            </div>
+
+            <div class="bar">
+                <div
+                    id="healthFill"
+                    class="fill">
+                </div>
+            </div>
+
+        </div>
+
+        <div class="stat">
+
+            <div class="statRow">
+                <span>OXYGEN</span>
+                <span id="oxygenText">100</span>
+            </div>
+
+            <div class="bar">
+                <div
+                    id="oxygenFill"
+                    class="fill">
+                </div>
+            </div>
+
+        </div>
+
+        <div class="stat">
+
+            <div class="statRow">
+                <span>BATTERY</span>
+                <span id="batteryText">100</span>
+            </div>
+
+            <div class="bar">
+                <div
+                    id="batteryFill"
+                    class="fill">
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div id="coordinates">
+        X 0 &nbsp; Z 0
+    </div>
+
+    <div id="mission">
+        LANDING SITE 탐사
+    </div>
+
+    <div id="crosshair"></div>
+
+    <div id="message"></div>
+
+</div>
+
+<!-- ========================================================
+     CONTROLS
+======================================================== -->
+
+<div id="controls">
+
+    <div id="joystick">
+
+        <div id="stick"></div>
+
+    </div>
+
+    <div id="actions">
+
+        <button
+            class="action"
+            id="scanButton">
+            SCAN
+        </button>
+
+        <button
+            class="action"
+            id="jumpButton">
+            JUMP
+        </button>
+
+    </div>
+
+</div>
+
+
+<script>
+
+/* =========================================================
+   V100 BOOT
+========================================================= */
+
+(function(){
+
+"use strict";
+
+
+/* =========================================================
+   DOM
+========================================================= */
+
+const canvas =
+    document.getElementById("game");
+
+const startScreen =
+    document.getElementById("startScreen");
+
+const startButton =
+    document.getElementById("startButton");
+
+const errorScreen =
+    document.getElementById("errorScreen");
+
+const errorText =
+    document.getElementById("errorText");
+
+const joystick =
+    document.getElementById("joystick");
+
+const stick =
+    document.getElementById("stick");
+
+const scanButton =
+    document.getElementById("scanButton");
+
+const jumpButton =
+    document.getElementById("jumpButton");
+
+
+/* =========================================================
+   GLOBAL GAME STATE
+========================================================= */
+
+let THREE_READY = false;
+
+let gameStarted = false;
+
+let renderer = null;
+
+let scene = null;
+
+let camera = null;
+
+let clock = null;
+
+let player = null;
+
+let terrain = null;
+
+let scanWave = null;
+
+let playerVelocityY = 0;
+
+let grounded = true;
+
+let cameraYaw = 0;
+
+let cameraPitch = 0.35;
+
+let joystickId = null;
+
+let cameraTouchId = null;
+
+let cameraLastX = 0;
+
+let cameraLastY = 0;
+
+let health = 100;
+
+let oxygen = 100;
+
+let battery = 100;
+
+
+/* =========================================================
+   INPUT
+========================================================= */
+
+const input = {
+
+    x:0,
+
+    y:0,
+
+    keys:{
+        w:false,
+        a:false,
+        s:false,
+        d:false
+    }
+
+};
+
+
+/* =========================================================
+   ERROR HANDLER
+========================================================= */
+
+window.addEventListener(
+    "error",
+    function(e){
+
+        console.error(
+            "V100 ERROR:",
+            e.error || e.message
+        );
+
+    }
+);
+
+
+/* =========================================================
+   THREE CHECK
+========================================================= */
+
+if(
+    typeof THREE === "undefined"
+){
+
+    errorScreen.style.display =
+        "flex";
+
+    errorText.textContent =
+        "Three.js를 불러오지 못했습니다.\n\n" +
+        "인터넷 연결을 확인한 뒤 다시 실행하세요.";
+
+    return;
+}
+
+THREE_READY = true;
+
+
+/* =========================================================
+   TERRAIN FUNCTION
+========================================================= */
+
+function getTerrainHeight(
+    x,
+    z
+){
+
+    return (
+
+        Math.sin(x * .045) * 1.7 +
+
+        Math.cos(z * .05) * 1.4 +
+
+        Math.sin(
+            (x + z) * .025
+        ) * 2 +
+
+        Math.sin(x*.12) *
+        Math.cos(z*.09) *
+        .4
+
+    );
+}
+
+
+/* =========================================================
+   ENGINE
+========================================================= */
+
+try{
+
+    renderer =
+        new THREE.WebGLRenderer({
+
+            canvas:canvas,
+
+            antialias:true,
+
+            powerPreference:
+                "high-performance"
+        });
+
+    renderer.setPixelRatio(
+        Math.min(
+            window.devicePixelRatio || 1,
+            1.5
+        )
+    );
+
+    renderer.setSize(
+        window.innerWidth,
+        window.innerHeight
+    );
+
+    renderer.outputColorSpace =
+        THREE.SRGBColorSpace;
+
+    renderer.toneMapping =
+        THREE.ACESFilmicToneMapping;
+
+    renderer.toneMappingExposure =
+        1.1;
+
+
+    scene =
+        new THREE.Scene();
+
+    scene.background =
+        new THREE.Color(
+            0x02050c
+        );
+
+    scene.fog =
+        new THREE.FogExp2(
+            0x07111f,
+            .007
+        );
+
+
+    camera =
+        new THREE.PerspectiveCamera(
+
+            65,
+
+            window.innerWidth /
+            window.innerHeight,
+
+            .1,
+
+            600
+
+        );
+
+
+    clock =
+        new THREE.Clock();
+
+
+}catch(err){
+
+    errorScreen.style.display =
+        "flex";
+
+    errorText.textContent =
+        String(err);
+
+    return;
+}
+
+
+/* =========================================================
+   LIGHT
+========================================================= */
+
+const ambient =
+    new THREE.HemisphereLight(
+        0x91bfff,
+        0x0a0d15,
+        1.7
+    );
+
+scene.add(
+    ambient
+);
+
+
+const sun =
+    new THREE.DirectionalLight(
+        0xaed5ff,
+        2.2
+    );
+
+sun.position.set(
+    -50,
+    80,
+    30
+);
+
+sun.castShadow = true;
+
+sun.shadow.mapSize.set(
+    1024,
+    1024
+);
+
+scene.add(
+    sun
+);
+
+
+/* =========================================================
+   STARS
+========================================================= */
+
+const starGeo =
+    new THREE.BufferGeometry();
+
+const starCount = 1200;
+
+const starArray =
+    new Float32Array(
+        starCount * 3
+    );
+
+for(
+    let i=0;
+    i<starCount;
+    i++
+){
+
+    const radius =
+        170 +
+        Math.random()*200;
+
+    const a =
+        Math.random() *
+        Math.PI*2;
+
+    const b =
+        Math.acos(
+            Math.random()*2-1
+        );
+
+    starArray[i*3] =
+        radius *
+        Math.sin(b) *
+        Math.cos(a);
+
+    starArray[i*3+1] =
+        radius *
+        Math.cos(b);
+
+    starArray[i*3+2] =
+        radius *
+        Math.sin(b) *
+        Math.sin(a);
+}
+
+starGeo.setAttribute(
+
+    "position",
+
+    new THREE.BufferAttribute(
+        starArray,
+        3
+    )
+
+);
+
+
+const starMat =
+    new THREE.PointsMaterial({
+
+        color:0xaedbff,
+
+        size:.75,
+
+        transparent:true,
+
+        opacity:.85
+    });
+
+
+const starField =
+    new THREE.Points(
+        starGeo,
+        starMat
+    );
+
+scene.add(
+    starField
+);
+
+
+/* =========================================================
+   GIANT PLANET
+========================================================= */
+
+const giantPlanet =
+    new THREE.Mesh(
+
+        new THREE.SphereGeometry(
+            30,
+            32,
+            24
+        ),
+
+        new THREE.MeshStandardMaterial({
+
+            color:0x303a85,
+
+            roughness:.9
+        })
+
+    );
+
+giantPlanet.position.set(
+    -90,
+    65,
+    -110
+);
+
+scene.add(
+    giantPlanet
+);
+
+
+/* =========================================================
+   TERRAIN
+========================================================= */
+
+const terrainGeometry =
+    new THREE.PlaneGeometry(
+        220,
+        220,
+        80,
+        80
+    );
+
+terrainGeometry.rotateX(
+    -Math.PI/2
+);
+
+const pos =
+    terrainGeometry.attributes.position;
+
+for(
+    let i=0;
+    i<pos.count;
+    i++
+){
+
+    const x =
+        pos.getX(i);
+
+    const z =
+        pos.getZ(i);
+
+    pos.setY(
+        i,
+        getTerrainHeight(x,z)
+    );
+}
+
+terrainGeometry.computeVertexNormals();
+
+
+const terrainMaterial =
+    new THREE.MeshStandardMaterial({
+
+        color:0x29313b,
+
+        roughness:.95,
+
+        metalness:.02
+    });
+
+
+terrain =
+    new THREE.Mesh(
+        terrainGeometry,
+        terrainMaterial
+    );
+
+terrain.receiveShadow = true;
+
+scene.add(
+    terrain
+);
+
+
+/* =========================================================
+   ROCKS
+========================================================= */
+
+function makeRock(
+    x,
+    z,
+    scale
+){
+
+    const y =
+        getTerrainHeight(
+            x,
+            z
+        );
+
+    const rock =
+        new THREE.Mesh(
+
+            new THREE.DodecahedronGeometry(
+                1,
+                0
+            ),
+
+            new THREE.MeshStandardMaterial({
+
+                color:0x3c4652,
+
+                roughness:.95
+            })
+
+        );
+
+    rock.position.set(
+        x,
+        y + scale*.45,
+        z
+    );
+
+    rock.scale.set(
+        scale*1.2,
+        scale,
+        scale*.8
+    );
+
+    rock.rotation.set(
+        Math.random(),
+        Math.random(),
+        Math.random()
+    );
+
+    scene.add(
+        rock
+    );
+}
+
+
+for(
+    let i=0;
+    i<100;
+    i++
+){
+
+    const angle =
+        Math.random() *
+        Math.PI*2;
+
+    const radius =
+        10 +
+        Math.random()*95;
+
+    makeRock(
+
+        Math.cos(angle)*radius,
+
+        Math.sin(angle)*radius,
+
+        .3 +
+        Math.random()*1.3
+
+    );
+}
+
+
+/* =========================================================
+   PLAYER
+========================================================= */
+
+player =
+    new THREE.Group();
+
+scene.add(
+    player
+);
+
+player.position.set(
+    0,
+    getTerrainHeight(0,0)+1.1,
+    0
+);
+
+
+/* =========================================================
+   PLAYER MATERIALS
+========================================================= */
+
+const suitMat =
+    new THREE.MeshStandardMaterial({
+
+        color:0xdce7f2,
+
+        roughness:.55,
+
+        metalness:.25
+    });
+
+
+const darkMat =
+    new THREE.MeshStandardMaterial({
+
+        color:0x172538,
+
+        roughness:.5,
+
+        metalness:.5
+    });
+
+
+const visorMat =
+    new THREE.MeshStandardMaterial({
+
+        color:0x5ed8ff,
+
+        emissive:0x0875aa,
+
+        emissiveIntensity:1.4,
+
+        metalness:.4,
+
+        roughness:.15
+    });
+
+
+/* body */
+
+const body =
+    new THREE.Mesh(
+
+        new THREE.CapsuleGeometry(
+            .42,
+            .75,
+            6,
+            10
+        ),
+
+        suitMat
+
+    );
+
+body.position.y = 1.15;
+
+player.add(
+    body
+);
+
+
+/* helmet */
+
+const helmet =
+    new THREE.Mesh(
+
+        new THREE.SphereGeometry(
+            .44,
+            14,
+            10
+        ),
+
+        suitMat
+
+    );
+
+helmet.position.y = 1.95;
+
+player.add(
+    helmet
+);
+
+
+/* visor */
+
+const visor =
+    new THREE.Mesh(
+
+        new THREE.SphereGeometry(
+            .30,
+            14,
+            10
+        ),
+
+        visorMat
+
+    );
+
+visor.scale.set(
+    1,
+    .7,
+    .5
+);
+
+visor.position.set(
+    0,
+    1.98,
+    -.29
+);
+
+player.add(
+    visor
+);
+
+
+/* backpack */
+
+const backpack =
+    new THREE.Mesh(
+
+        new THREE.BoxGeometry(
+            .5,
+            .65,
+            .3
+        ),
+
+        darkMat
+
+    );
+
+backpack.position.set(
+    0,
+    1.25,
+    .38
+);
+
+player.add(
+    backpack
+);
+
+
+/* legs */
+
+const leftLeg =
+    new THREE.Mesh(
+
+        new THREE.CapsuleGeometry(
+            .14,
+            .6,
+            5,
+            7
+        ),
+
+        darkMat
+
+    );
+
+leftLeg.position.set(
+    -.22,
+    .52,
+    0
+);
+
+player.add(
+    leftLeg
+);
+
+
+const rightLeg =
+    leftLeg.clone();
+
+rightLeg.position.x =
+    .22;
+
+player.add(
+    rightLeg
+);
+
+
+/* arms */
+
+const leftArm =
+    new THREE.Mesh(
+
+        new THREE.CapsuleGeometry(
+            .12,
+            .55,
+            5,
+            7
+        ),
+
+        suitMat
+
+    );
+
+leftArm.position.set(
+    -.53,
+    1.25,
+    0
+);
+
+player.add(
+    leftArm
+);
+
+
+const rightArm =
+    leftArm.clone();
+
+rightArm.position.x =
+    .53;
+
+player.add(
+    rightArm
+);
+
+
+/* =========================================================
+   SHIP
+========================================================= */
+
+const ship =
+    new THREE.Group();
+
+scene.add(
+    ship
+);
+
+const shipBody =
+    new THREE.Mesh(
+
+        new THREE.CylinderGeometry(
+            2,
+            2.5,
+            1,
+            8
+        ),
+
+        new THREE.MeshStandardMaterial({
+
+            color:0x8c9aa9,
+
+            metalness:.8,
+
+            roughness:.3
+        })
+
+    );
+
+shipBody.rotation.z =
+    Math.PI/2;
+
+ship.add(
+    shipBody
+);
+
+
+const cockpit =
+    new THREE.Mesh(
+
+        new THREE.SphereGeometry(
+            .9,
+            16,
+            10
+        ),
+
+        new THREE.MeshStandardMaterial({
+
+            color:0x62dfff,
+
+            emissive:0x0a6eaa,
+
+            emissiveIntensity:2,
+
+            metalness:.4
+        })
+
+    );
+
+cockpit.scale.set(
+    1.3,
+    .7,
+    .7
+);
+
+cockpit.position.x =
+    1.5;
+
+ship.add(
+    cockpit
+);
+
+
+ship.position.set(
+    -3,
+    getTerrainHeight(-3,-3)+2.5,
+    -3
+);
+
+
+/* =========================================================
+   MONOLITH
+========================================================= */
+
+const monolith =
+    new THREE.Group();
+
+scene.add(
+    monolith
+);
+
+const pillar =
+    new THREE.Mesh(
+
+        new THREE.BoxGeometry(
+            2,
+            7,
+            1
+        ),
+
+        new THREE.MeshStandardMaterial({
+
+            color:0x222c3a,
+
+            roughness:.65
+        })
+
+    );
+
+pillar.position.y = 3.5;
+
+monolith.add(
+    pillar
+);
+
+
+const core =
+    new THREE.Mesh(
+
+        new THREE.BoxGeometry(
+            .35,
+            5,
+            .15
+        ),
+
+        new THREE.MeshStandardMaterial({
+
+            color:0x986cff,
+
+            emissive:0x5b20ff,
+
+            emissiveIntensity:3
+        })
+
+    );
+
+core.position.set(
+    0,
+    3.5,
+    -.55
+);
+
+monolith.add(
+    core
+);
+
+
+monolith.position.set(
+    32,
+    getTerrainHeight(32,-35),
+    -35
+);
+
+
+/* =========================================================
+   CRYSTALS
+========================================================= */
+
+const crystals = [];
+
+function makeCrystal(
+    x,
+    z
+){
+
+    const y =
+        getTerrainHeight(
+            x,
+            z
+        );
+
+    const group =
+        new THREE.Group();
+
+    const mesh =
+        new THREE.Mesh(
+
+            new THREE.OctahedronGeometry(
+                .55,
+                0
+            ),
+
+            new THREE.MeshStandardMaterial({
+
+                color:0x5ee0ff,
+
+                emissive:0x118cff,
+
+                emissiveIntensity:2.2,
+
+                metalness:.3,
+
+                roughness:.2
+            })
+
+        );
+
+    mesh.scale.y =
+        1.5 +
+        Math.random();
+
+    group.add(
+        mesh
+    );
+
+    group.position.set(
+        x,
+        y+.6,
+        z
+    );
+
+    scene.add(
+        group
+    );
+
+    crystals.push(
+        group
+    );
+}
+
+
+for(
+    let i=0;
+    i<25;
+    i++
+){
+
+    const a =
+        Math.random() *
+        Math.PI*2;
+
+    const r =
+        15 +
+        Math.random()*90;
+
+    makeCrystal(
+
+        Math.cos(a)*r,
+
+        Math.sin(a)*r
+
+    );
+}
+
+
+/* =========================================================
+   CAMERA
+========================================================= */
+
+const cameraTarget =
+    new THREE.Vector3();
+
+function updateCamera(
+    dt
+){
+
+    if(!player)
+        return;
+
+
+    cameraTarget.set(
+
+        player.position.x,
+
+        player.position.y+1.1,
+
+        player.position.z
+
+    );
+
+
+    const distance = 7;
+
+
+    const cp =
+        Math.cos(
+            cameraPitch
+        );
+
+    const sp =
+        Math.sin(
+            cameraPitch
+        );
+
+
+    const targetPosition =
+        new THREE.Vector3(
+
+            cameraTarget.x +
+            Math.sin(cameraYaw) *
+            cp *
+            distance,
+
+            cameraTarget.y +
+            sp *
+            distance,
+
+            cameraTarget.z +
+            Math.cos(cameraYaw) *
+            cp *
+            distance
+
+        );
+
+
+    camera.position.lerp(
+
+        targetPosition,
+
+        1 -
+        Math.pow(
+            .001,
+            dt
+        )
+
+    );
+
+
+    camera.lookAt(
+        cameraTarget
+    );
+}
+
+
+/* =========================================================
+   PLAYER MOVEMENT
+========================================================= */
+
+const moveVector =
+    new THREE.Vector3();
+
+function updatePlayer(
+    dt
+){
+
+    let x =
+        input.x;
+
+    let y =
+        input.y;
+
+
+    if(
+        Math.abs(x)<.05 &&
+        Math.abs(y)<.05
+    ){
+
+        x =
+            (input.keys.d?1:0) -
+            (input.keys.a?1:0);
+
+        y =
+            (input.keys.s?1:0) -
+            (input.keys.w?1:0);
+    }
+
+
+    if(
+        Math.abs(x)>0.01 ||
+        Math.abs(y)>0.01
+    ){
+
+        const forward =
+            new THREE.Vector3(
+
+                -Math.sin(cameraYaw),
+
+                0,
+
+                -Math.cos(cameraYaw)
+
+            );
+
+
+        const right =
+            new THREE.Vector3(
+
+                Math.cos(cameraYaw),
+
+                0,
+
+                -Math.sin(cameraYaw)
+
+            );
+
+
+        moveVector
+            .set(0,0,0)
+            .addScaledVector(
+                right,
+                x
+            )
+            .addScaledVector(
+                forward,
+                -y
+            );
+
+
+        if(
+            moveVector.lengthSq()>1
+        ){
+
+            moveVector.normalize();
+
+        }
+
+
+        player.position.addScaledVector(
+
+            moveVector,
+
+            5.5 * dt
+
+        );
+
+
+        const desiredAngle =
+            Math.atan2(
+
+                moveVector.x,
+
+                moveVector.z
+
+            );
+
+
+        let difference =
+            desiredAngle -
+            player.rotation.y;
+
+
+        difference =
+            Math.atan2(
+
+                Math.sin(difference),
+
+                Math.cos(difference)
+
+            );
+
+
+        player.rotation.y +=
+            difference *
+            Math.min(
+                1,
+                dt*10
+            );
+
+    }
+
+
+    /* gravity */
+
+    playerVelocityY -=
+        20 * dt;
+
+    player.position.y +=
+        playerVelocityY * dt;
+
+
+    const ground =
+        getTerrainHeight(
+
+            player.position.x,
+
+            player.position.z
+
+        ) + 1.05;
+
+
+    if(
+        player.position.y <=
+        ground
+    ){
+
+        player.position.y =
+            ground;
+
+        playerVelocityY = 0;
+
+        grounded = true;
+
+    }
+
+
+    /* animation */
+
+    const moving =
+        Math.abs(x)>.05 ||
+        Math.abs(y)>.05;
+
+
+    if(
+        moving &&
+        grounded
+    ){
+
+        const t =
+            performance.now() *
+            .012;
+
+
+        leftLeg.rotation.x =
+            Math.sin(t)*.45;
+
+        rightLeg.rotation.x =
+            -Math.sin(t)*.45;
+
+        leftArm.rotation.x =
+            -Math.sin(t)*.35;
+
+        rightArm.rotation.x =
+            Math.sin(t)*.35;
+
+    }else{
+
+        leftLeg.rotation.x = 0;
+        rightLeg.rotation.x = 0;
+
+        leftArm.rotation.x = 0;
+        rightArm.rotation.x = 0;
+
+    }
+
+
+    /* world limit */
+
+    player.position.x =
+        THREE.MathUtils.clamp(
+            player.position.x,
+            -105,
+            105
+        );
+
+    player.position.z =
+        THREE.MathUtils.clamp(
+            player.position.z,
+            -105,
+            105
+        );
+}
+
+
+/* =========================================================
+   JUMP
+========================================================= */
+
+function jump(){
+
+    if(
+        !gameStarted
+    )
+        return;
+
+
+    if(
+        grounded
+    ){
+
+        playerVelocityY =
+            8;
+
+        grounded = false;
+
+        showMessage(
+            "JUMP"
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   SCAN
+========================================================= */
+
+function scan(){
+
+    if(
+        !gameStarted
+    )
+        return;
+
+
+    showMessage(
+        "SCANNING..."
+    );
+
+
+    const ring =
+        document.createElement(
+            "div"
+        );
+
+    ring.className =
+        "scanRing";
+
+    document.body.appendChild(
+        ring
+    );
+
+
+    setTimeout(
+        () => {
+
+            ring.remove();
+
+        },
+        1300
+    );
+
+
+    let closest = null;
+
+    let closestDistance =
+        Infinity;
+
+
+    for(
+        const crystal
+        of crystals
+    ){
+
+        if(
+            !crystal.parent
+        )
+            continue;
+
+
+        const distance =
+            player.position.distanceTo(
+                crystal.position
+            );
+
+
+        if(
+            distance <
+            closestDistance
+        ){
+
+            closestDistance =
+                distance;
+
+            closest =
+                crystal;
+
+        }
+
+    }
+
+
+    if(
+        closest &&
+        closestDistance < 45
+    ){
+
+        showMessage(
+            "SIGNAL DETECTED // " +
+            Math.floor(
+                closestDistance
+            ) +
+            "m"
+        );
+
+    }else{
+
+        showMessage(
+            "NO STRONG SIGNAL"
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   MESSAGE
+========================================================= */
+
+let messageTimer = null;
+
+function showMessage(
+    text
+){
+
+    const element =
+        document.getElementById(
+            "message"
+        );
+
+    element.textContent =
+        text;
+
+    element.classList.add(
+        "show"
+    );
+
+
+    clearTimeout(
+        messageTimer
+    );
+
+
+    messageTimer =
+        setTimeout(
+            () => {
+
+                element.classList.remove(
+                    "show"
+                );
+
+            },
+            1400
+        );
+}
+
+
+/* =========================================================
+   RESOURCES
+========================================================= */
+
+function updateResources(
+    dt
+){
+
+    oxygen -=
+        dt*.15;
+
+    battery -=
+        dt*.01;
+
+
+    oxygen =
+        THREE.MathUtils.clamp(
+            oxygen,
+            0,
+            100
+        );
+
+
+    battery =
+        THREE.MathUtils.clamp(
+            battery,
+            0,
+            100
+        );
+
+
+    if(
+        oxygen <= 0
+    ){
+
+        health -=
+            dt*.8;
+
+    }
+
+
+    health =
+        THREE.MathUtils.clamp(
+            health,
+            0,
+            100
+        );
+
+
+    document.getElementById(
+        "healthText"
+    ).textContent =
+        Math.floor(health);
+
+    document.getElementById(
+        "oxygenText"
+    ).textContent =
+        Math.floor(oxygen);
+
+    document.getElementById(
+        "batteryText"
+    ).textContent =
+        Math.floor(battery);
+
+
+    document.getElementById(
+        "healthFill"
+    ).style.width =
+        health + "%";
+
+    document.getElementById(
+        "oxygenFill"
+    ).style.width =
+        oxygen + "%";
+
+    document.getElementById(
+        "batteryFill"
+    ).style.width =
+        battery + "%";
+
+}
+
+
+/* =========================================================
+   CRYSTAL ANIMATION
+========================================================= */
+
+function updateCrystals(
+    time
+){
+
+    for(
+        let i=0;
+        i<crystals.length;
+        i++
+    ){
+
+        const c =
+            crystals[i];
+
+        if(!c.parent)
+            continue;
+
+
+        c.rotation.y +=
+            .01;
+
+
+        c.position.y +=
+            Math.sin(
+                time*.002+i
+            )*.002;
+
+    }
+
+}
+
+
+/* =========================================================
+   CRYSTAL COLLECTION
+========================================================= */
+
+function collectCrystals(){
+
+    for(
+        let i=
+        crystals.length-1;
+
+        i>=0;
+
+        i--
+    ){
+
+        const crystal =
+            crystals[i];
+
+        if(
+            !crystal.parent
+        )
+            continue;
+
+
+        const d =
+            player.position.distanceTo(
+                crystal.position
+            );
+
+
+        if(
+            d < 1.8
+        ){
+
+            scene.remove(
+                crystal
+            );
+
+            showMessage(
+                "MINERAL +1"
+            );
+
+        }
+
+    }
+
+}
+
+
+/* =========================================================
+   START BUTTON
+========================================================= */
+
+startButton.addEventListener(
+
+    "click",
+
+    function(e){
+
+        e.preventDefault();
+
+        e.stopPropagation();
+
+
+        if(
+            gameStarted
+        )
+            return;
+
+
+        gameStarted = true;
+
+
+        startScreen.style.display =
+            "none";
+
+
+        showMessage(
+            "MISSION START"
+        );
+
+
+        clock.start();
+
+    },
+
+    false
+
+);
+
+
+/* =========================================================
+   JUMP BUTTON
+========================================================= */
+
+jumpButton.addEventListener(
+
+    "pointerdown",
+
+    function(e){
+
+        e.preventDefault();
+
+        e.stopPropagation();
+
+        jump();
+
+    },
+
+    false
+
+);
+
+
+/* =========================================================
+   SCAN BUTTON
+========================================================= */
+
+scanButton.addEventListener(
+
+    "pointerdown",
+
+    function(e){
+
+        e.preventDefault();
+
+        e.stopPropagation();
+
+        scan();
+
+    },
+
+    false
+
+);
+
+
+/* =========================================================
+   JOYSTICK HELPERS
+========================================================= */
+
+function updateJoystick(
+    clientX,
+    clientY
+){
+
+    const rect =
+        joystick.getBoundingClientRect();
+
+
+    const centerX =
+        rect.left +
+        rect.width/2;
+
+
+    const centerY =
+        rect.top +
+        rect.height/2;
+
+
+    let dx =
+        clientX-centerX;
+
+
+    let dy =
+        clientY-centerY;
+
+
+    const max =
+        45;
+
+
+    const length =
+        Math.hypot(
+            dx,
+            dy
+        );
+
+
+    if(
+        length > max
+    ){
+
+        dx =
+            dx/length*max;
+
+        dy =
+            dy/length*max;
+
+    }
+
+
+    input.x =
+        dx/max;
+
+
+    input.y =
+        dy/max;
+
+
+    stick.style.transform =
+        `translate(
+            calc(-50% + ${dx}px),
+            calc(-50% + ${dy}px)
+        )`;
+
+}
+
+
+/* =========================================================
+   JOYSTICK TOUCH
+========================================================= */
+
+joystick.addEventListener(
+
+    "touchstart",
+
+    function(e){
+
+        e.preventDefault();
+
+        e.stopPropagation();
+
+
+        const touch =
+            e.changedTouches[0];
+
+
+        joystickId =
+            touch.identifier;
+
+
+        updateJoystick(
+            touch.clientX,
+            touch.clientY
+        );
+
+    },
+
+    {
+        passive:false
+    }
+
+);
+
+
+joystick.addEventListener(
+
+    "touchmove",
+
+    function(e){
+
+        e.preventDefault();
+
+        e.stopPropagation();
+
+
+        for(
+            const touch
+            of e.changedTouches
+        ){
+
+            if(
+                touch.identifier ===
+                joystickId
+            ){
+
+                updateJoystick(
+
+                    touch.clientX,
+
+                    touch.clientY
+
+                );
+
+            }
+
+        }
+
+    },
+
+    {
+        passive:false
+    }
+
+);
+
+
+function resetJoystick(){
+
+    joystickId = null;
+
+    input.x = 0;
+    input.y = 0;
+
+
+    stick.style.transform =
+        "translate(-50%,-50%)";
+
+}
+
+
+/* =========================================================
+   JOYSTICK END
+========================================================= */
+
+joystick.addEventListener(
+
+    "touchend",
+
+    function(e){
+
+        e.preventDefault();
+
+        resetJoystick();
+
+    },
+
+    {
+        passive:false
+    }
+
+);
+
+
+joystick.addEventListener(
+
+    "touchcancel",
+
+    function(){
+
+        resetJoystick();
+
+    }
+
+);
+
+
+/* =========================================================
+   JOYSTICK POINTER
+========================================================= */
+
+joystick.addEventListener(
+
+    "pointerdown",
+
+    function(e){
+
+        if(
+            e.pointerType ===
+            "touch"
+        )
+            return;
+
+
+        e.preventDefault();
+
+        joystick.setPointerCapture(
+            e.pointerId
+        );
+
+
+        joystickId =
+            e.pointerId;
+
+
+        updateJoystick(
+            e.clientX,
+            e.clientY
+        );
+
+    }
+
+);
+
+
+joystick.addEventListener(
+
+    "pointermove",
+
+    function(e){
+
+        if(
+            joystickId !==
+            e.pointerId
+        )
+            return;
+
+
+        if(
+            e.pointerType ===
+            "touch"
+        )
+            return;
+
+
+        updateJoystick(
+            e.clientX,
+            e.clientY
+        );
+
+    }
+
+);
+
+
+joystick.addEventListener(
+
+    "pointerup",
+
+    function(e){
+
+        if(
+            joystickId ===
+            e.pointerId
+        ){
+
+            resetJoystick();
+
+        }
+
+    }
+
+);
+
+
+/* =========================================================
+   KEYBOARD
+========================================================= */
+
+window.addEventListener(
+
+    "keydown",
+
+    function(e){
+
+        if(
+            e.code === "KeyW"
+        )
+            input.keys.w = true;
+
+
+        if(
+            e.code === "KeyA"
+        )
+            input.keys.a = true;
+
+
+        if(
+            e.code === "KeyS"
+        )
+            input.keys.s = true;
+
+
+        if(
+            e.code === "KeyD"
+        )
+            input.keys.d = true;
+
+
+        if(
+            e.code === "Space"
+        ){
+
+            e.preventDefault();
+
+            jump();
+
+        }
+
+    }
+
+);
+
+
+window.addEventListener(
+
+    "keyup",
+
+    function(e){
+
+        if(
+            e.code === "KeyW"
+        )
+            input.keys.w = false;
+
+
+        if(
+            e.code === "KeyA"
+        )
+            input.keys.a = false;
+
+
+        if(
+            e.code === "KeyS"
+        )
+            input.keys.s = false;
+
+
+        if(
+            e.code === "KeyD"
+        )
+            input.keys.d = false;
+
+    }
+
+);
+
+
+/* =========================================================
+   CAMERA TOUCH
+========================================================= */
+
+canvas.addEventListener(
+
+    "touchstart",
+
+    function(e){
+
+        if(
+            e.touches.length === 0
+        )
+            return;
+
+
+        const touch =
+            e.touches[0];
+
+
+        cameraTouchId =
+            touch.identifier;
+
+
+        cameraLastX =
+            touch.clientX;
+
+
+        cameraLastY =
+            touch.clientY;
+
+    },
+
+    {
+        passive:true
+    }
+
+);
+
+
+canvas.addEventListener(
+
+    "touchmove",
+
+    function(e){
+
+        for(
+            const touch
+            of e.changedTouches
+        ){
+
+            if(
+                touch.identifier !==
+                cameraTouchId
+            )
+                continue;
+
+
+            const dx =
+                touch.clientX -
+                cameraLastX;
+
+
+            const dy =
+                touch.clientY -
+                cameraLastY;
+
+
+            cameraLastX =
+                touch.clientX;
+
+
+            cameraLastY =
+                touch.clientY;
+
+
+            cameraYaw -=
+                dx*.007;
+
+
+            cameraPitch +=
+                dy*.005;
+
+
+            cameraPitch =
+                THREE.MathUtils.clamp(
+
+                    cameraPitch,
+
+                    -.25,
+
+                    .85
+
+                );
+
+        }
+
+    },
+
+    {
+        passive:true
+    }
+
+);
+
+
+canvas.addEventListener(
+
+    "touchend",
+
+    function(){
+
+        cameraTouchId = null;
+
+    }
+
+);
+
+
+/* =========================================================
+   MOUSE CAMERA
+========================================================= */
+
+let mouseCamera =
+    false;
+
+canvas.addEventListener(
+
+    "mousedown",
+
+    function(e){
+
+        if(
+            e.button !== 0
+        )
+            return;
+
+
+        mouseCamera = true;
+
+        cameraLastX =
+            e.clientX;
+
+        cameraLastY =
+            e.clientY;
+
+    }
+
+);
+
+
+window.addEventListener(
+
+    "mousemove",
+
+    function(e){
+
+        if(
+            !mouseCamera
+        )
+            return;
+
+
+        const dx =
+            e.clientX -
+            cameraLastX;
+
+
+        const dy =
+            e.clientY -
+            cameraLastY;
+
+
+        cameraLastX =
+            e.clientX;
+
+
+        cameraLastY =
+            e.clientY;
+
+
+        cameraYaw -=
+            dx*.006;
+
+
+        cameraPitch +=
+            dy*.004;
+
+
+        cameraPitch =
+            THREE.MathUtils.clamp(
+
+                cameraPitch,
+
+                -.25,
+
+                .85
+
+            );
+
+    }
+
+);
+
+
+window.addEventListener(
+
+    "mouseup",
+
+    function(){
+
+        mouseCamera = false;
+
+    }
+
+);
+
+
+/* =========================================================
+   RESIZE
+========================================================= */
+
+window.addEventListener(
+
+    "resize",
+
+    function(){
+
+        camera.aspect =
+            window.innerWidth /
+            window.innerHeight;
+
+
+        camera.updateProjectionMatrix();
+
+
+        renderer.setSize(
+
+            window.innerWidth,
+
+            window.innerHeight
+
+        );
+
+
+        renderer.setPixelRatio(
+
+            Math.min(
+
+                window.devicePixelRatio || 1,
+
+                1.5
+
+            )
+
+        );
+
+    }
+
+);
+
+
+/* =========================================================
+   GAME LOOP
+========================================================= */
+
+function loop(){
+
+    requestAnimationFrame(
+        loop
+    );
+
+
+    const dt =
+        Math.min(
+            clock.getDelta(),
+            .05
+        );
+
+
+    if(
+        gameStarted
+    ){
+
+        updatePlayer(
+            dt
+        );
+
+
+        updateCamera(
+            dt
+        );
+
+
+        updateResources(
+            dt
+        );
+
+
+        updateCrystals(
+            performance.now()
+        );
+
+
+        collectCrystals();
+
+
+        starField.rotation.y +=
+            dt*.002;
+
+
+        const x =
+            Math.round(
+                player.position.x
+            );
+
+
+        const z =
+            Math.round(
+                player.position.z
+            );
+
+
+        document.getElementById(
+            "coordinates"
+        ).textContent =
+            `X ${x}   Z ${z}`;
+
+    }
+
+
+    renderer.render(
+        scene,
+        camera
+    );
+
+}
+
+
+/* =========================================================
+   INITIAL CAMERA
+========================================================= */
+
+camera.position.set(
+    0,
+    4.5,
+    7
+);
+
+camera.lookAt(
+    player.position
+);
+
+
+/* =========================================================
+   BOOT LOOP
+========================================================= */
+
+loop();
+
+
+/* =========================================================
+   READY
+========================================================= */
+
+console.log(
+    "%cV100 READY",
+    "color:#67d8ff;font-size:20px;font-weight:bold"
+);
+
+console.log(
+    "START / JOYSTICK / CAMERA / JUMP / SCAN READY"
+);
+
+})();
+
+</script>
+
+</body>
+</html>
