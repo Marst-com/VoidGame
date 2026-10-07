@@ -1,23 +1,42 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport"
-        content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-  <title>ASTERIA — TriZas</title>
-  <link rel="stylesheet" href="./style.css">
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"
+    >
+
+    <title>ASTERIA — TriZas</title>
+
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-  <canvas id="game"></canvas>
 
-  <div id="hud">
-    <b>ASTERIA</b>
-    <span id="status">TriZas V0.1</span>
-  </div>
+<canvas id="game"></canvas>
 
-  <div id="crosshair">+</div>
+<div id="hud">
+    <div class="title">ASTERIA</div>
+    <div class="sub">TRIZAS ENGINE V0.3</div>
+    <div id="status">INITIALIZING...</div>
+</div>
 
-  <script type="module" src="./main.js"></script>
+<div id="crosshair">+</div>
+
+<div id="controls">
+    <div id="joystick">
+        <div id="joyBase">
+            <div id="joyStick"></div>
+        </div>
+    </div>
+
+    <button id="jump">JUMP</button>
+    <button id="scan">SCAN</button>
+</div>
+
+<script src="trizas.js"></script>
+<script src="main.js"></script>
+
 </body>
 </html>
