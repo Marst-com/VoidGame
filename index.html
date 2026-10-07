@@ -5,202 +5,170 @@
 
   <meta
     name="viewport"
-    content="width=device-width,
-             initial-scale=1,
-             maximum-scale=1,
-             user-scalable=no,
-             viewport-fit=cover"
+    content="width=device-width,initial-scale=1,
+    maximum-scale=1,user-scalable=no,
+    viewport-fit=cover"
   >
 
-  <title>ASTERIA — V101</title>
+  <title>ASTERIA — V102</title>
 
   <link rel="stylesheet" href="./style.css">
 </head>
 
 <body>
 
-<div id="app">
+<div id="startScreen">
 
-  <!-- START SCREEN -->
-  <section id="startScreen">
+  <div class="startCard">
 
-    <div class="start-glow"></div>
-
-    <div class="start-card">
-
-      <div class="eyebrow">
-        DUOMARST EXPEDITION SYSTEM
-      </div>
-
-      <h1>ASTERIA</h1>
-
-      <div class="version">
-        EXPEDITION V101
-      </div>
-
-      <p>
-        미지의 행성에 착륙했다.<br>
-        탐사하고, 스캔하고, 살아남아라.
-      </p>
-
-      <button id="startButton">
-        START EXPEDITION
-      </button>
-
-      <div class="controls-hint">
-        WASD / 방향키 이동<br>
-        마우스 드래그 카메라<br>
-        SPACE 점프 · E 스캔
-      </div>
-
+    <div class="eyebrow">
+      DUOMARST EXPEDITION SYSTEM
     </div>
 
-  </section>
+    <h1>ASTERIA</h1>
 
-
-  <!-- GAME -->
-  <main id="game">
-
-    <canvas id="gameCanvas"></canvas>
-
-
-    <!-- HUD -->
-    <div id="hud">
-
-      <div class="hud-left">
-
-        <div class="brand">
-          ASTERIA
-          <span>V101</span>
-        </div>
-
-        <div class="mission-panel">
-
-          <div class="mission-label">
-            MISSION 01
-          </div>
-
-          <div id="missionText">
-            착륙 지점을 조사하라
-          </div>
-
-        </div>
-
-      </div>
-
-
-      <div class="status-panel">
-
-        <div class="status-row">
-          <span>HP</span>
-          <div class="bar">
-            <div id="hpBar"></div>
-          </div>
-        </div>
-
-        <div class="status-row">
-          <span>O₂</span>
-          <div class="bar">
-            <div id="oxygenBar"></div>
-          </div>
-        </div>
-
-        <div class="status-row">
-          <span>BAT</span>
-          <div class="bar">
-            <div id="batteryBar"></div>
-          </div>
-        </div>
-
-      </div>
-
-
-      <div class="resource-panel">
-
-        <div>
-          MINERALS
-        </div>
-
-        <strong id="mineralCount">
-          0
-        </strong>
-
-      </div>
-
-
-      <!-- DISCOVERY -->
-      <div id="discovery">
-        <div class="discovery-title">
-          DISCOVERY
-        </div>
-
-        <div id="discoveryText">
-          UNKNOWN
-        </div>
-      </div>
-
-
-      <!-- SCAN MESSAGE -->
-      <div id="scanMessage">
-        SCANNING...
-      </div>
-
-
-      <!-- CROSSHAIR -->
-      <div id="crosshair">
-        <span></span>
-      </div>
-
-
-      <!-- MINIMAP -->
-      <div id="minimap">
-
-        <div class="map-ring"></div>
-
-        <div id="mapPlayer"></div>
-
-        <div id="mapShip"></div>
-
-      </div>
-
-
-      <!-- MOBILE CONTROLS -->
-      <div id="mobileControls">
-
-        <div id="joystick">
-          <div id="joystickBase">
-            <div id="joystickStick"></div>
-          </div>
-        </div>
-
-        <div id="actionButtons">
-
-          <button
-            id="jumpButton"
-            class="action-button"
-          >
-            JUMP
-          </button>
-
-          <button
-            id="scanButton"
-            class="action-button scan"
-          >
-            SCAN
-          </button>
-
-        </div>
-
-      </div>
-
+    <div class="version">
+      PLANETARY EXPEDITION / V102
     </div>
 
-  </main>
+    <p>
+      미지의 행성에 착륙했다.<br>
+      주변을 탐사하고 고대 구조물을 찾아라.
+    </p>
+
+    <button id="startButton">
+      START EXPEDITION
+    </button>
+
+    <div class="help">
+      WASD 이동 · 마우스 드래그 카메라 · SPACE 점프 · E 스캔
+    </div>
+
+  </div>
 
 </div>
 
 
-<script type="module" src="./src/main.js"></script>
+<div id="game">
+
+  <canvas id="gameCanvas"></canvas>
+
+
+  <!-- HUD -->
+
+  <div id="hud">
+
+    <div class="brand">
+      ASTERIA
+      <span>V102</span>
+    </div>
+
+    <div class="missionBox">
+
+      <div class="missionTitle">
+        CURRENT MISSION
+      </div>
+
+      <div id="mission">
+        착륙 지점을 조사하라
+      </div>
+
+    </div>
+
+
+    <div class="status">
+
+      <div class="statusLine">
+        <b>HP</b>
+        <div class="bar">
+          <i id="hp"></i>
+        </div>
+      </div>
+
+      <div class="statusLine">
+        <b>O₂</b>
+        <div class="bar">
+          <i id="oxygen"></i>
+        </div>
+      </div>
+
+      <div class="statusLine">
+        <b>BAT</b>
+        <div class="bar">
+          <i id="battery"></i>
+        </div>
+      </div>
+
+    </div>
+
+
+    <div class="minerals">
+      MINERALS
+      <strong id="mineralCount">0</strong>
+    </div>
+
+
+    <div id="scanText">
+      SCANNING
+    </div>
+
+
+    <div id="discovery">
+      <small>DISCOVERY</small>
+      <b id="discoveryName"></b>
+    </div>
+
+
+    <div id="crosshair">
+      <span></span>
+    </div>
+
+
+    <!-- JOYSTICK -->
+
+    <div id="joystick">
+
+      <div id="joyBase">
+
+        <div id="joyStick"></div>
+
+      </div>
+
+    </div>
+
+
+    <!-- ACTION -->
+
+    <div id="actions">
+
+      <button id="jump">
+        JUMP
+      </button>
+
+      <button id="scan">
+        SCAN
+      </button>
+
+    </div>
+
+
+    <!-- MINIMAP -->
+
+    <div id="minimap">
+
+      <div id="mapPlayer"></div>
+
+      <div class="mapObject shipMap"></div>
+      <div class="mapObject ruinMap"></div>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<script type="module" src="./main.js"></script>
 
 </body>
 </html>
