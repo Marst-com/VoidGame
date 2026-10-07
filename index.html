@@ -2,173 +2,22 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-
-  <meta
-    name="viewport"
-    content="width=device-width,initial-scale=1,
-    maximum-scale=1,user-scalable=no,
-    viewport-fit=cover"
-  >
-
-  <title>ASTERIA — V102</title>
-
+  <meta name="viewport"
+        content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <title>ASTERIA — TriZas</title>
   <link rel="stylesheet" href="./style.css">
 </head>
 
 <body>
-
-<div id="startScreen">
-
-  <div class="startCard">
-
-    <div class="eyebrow">
-      DUOMARST EXPEDITION SYSTEM
-    </div>
-
-    <h1>ASTERIA</h1>
-
-    <div class="version">
-      PLANETARY EXPEDITION / V102
-    </div>
-
-    <p>
-      미지의 행성에 착륙했다.<br>
-      주변을 탐사하고 고대 구조물을 찾아라.
-    </p>
-
-    <button id="startButton">
-      START EXPEDITION
-    </button>
-
-    <div class="help">
-      WASD 이동 · 마우스 드래그 카메라 · SPACE 점프 · E 스캔
-    </div>
-
-  </div>
-
-</div>
-
-
-<div id="game">
-
-  <canvas id="gameCanvas"></canvas>
-
-
-  <!-- HUD -->
+  <canvas id="game"></canvas>
 
   <div id="hud">
-
-    <div class="brand">
-      ASTERIA
-      <span>V102</span>
-    </div>
-
-    <div class="missionBox">
-
-      <div class="missionTitle">
-        CURRENT MISSION
-      </div>
-
-      <div id="mission">
-        착륙 지점을 조사하라
-      </div>
-
-    </div>
-
-
-    <div class="status">
-
-      <div class="statusLine">
-        <b>HP</b>
-        <div class="bar">
-          <i id="hp"></i>
-        </div>
-      </div>
-
-      <div class="statusLine">
-        <b>O₂</b>
-        <div class="bar">
-          <i id="oxygen"></i>
-        </div>
-      </div>
-
-      <div class="statusLine">
-        <b>BAT</b>
-        <div class="bar">
-          <i id="battery"></i>
-        </div>
-      </div>
-
-    </div>
-
-
-    <div class="minerals">
-      MINERALS
-      <strong id="mineralCount">0</strong>
-    </div>
-
-
-    <div id="scanText">
-      SCANNING
-    </div>
-
-
-    <div id="discovery">
-      <small>DISCOVERY</small>
-      <b id="discoveryName"></b>
-    </div>
-
-
-    <div id="crosshair">
-      <span></span>
-    </div>
-
-
-    <!-- JOYSTICK -->
-
-    <div id="joystick">
-
-      <div id="joyBase">
-
-        <div id="joyStick"></div>
-
-      </div>
-
-    </div>
-
-
-    <!-- ACTION -->
-
-    <div id="actions">
-
-      <button id="jump">
-        JUMP
-      </button>
-
-      <button id="scan">
-        SCAN
-      </button>
-
-    </div>
-
-
-    <!-- MINIMAP -->
-
-    <div id="minimap">
-
-      <div id="mapPlayer"></div>
-
-      <div class="mapObject shipMap"></div>
-      <div class="mapObject ruinMap"></div>
-
-    </div>
-
+    <b>ASTERIA</b>
+    <span id="status">TriZas V0.1</span>
   </div>
 
-</div>
+  <div id="crosshair">+</div>
 
-
-<script type="module" src="./main.js"></script>
-
+  <script type="module" src="./main.js"></script>
 </body>
 </html>
