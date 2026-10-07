@@ -1,94 +1,128 @@
 /* =========================================================
-   TriZas V0.2
-   Lightweight WebGL 3D Engine
+   TriZas V0.3
+   Standalone WebGL Engine
+   No CDN
+   No import
+   No export
 ========================================================= */
 
-const DEG = Math.PI / 180;
+(function (global) {
+
+"use strict";
 
 
 /* =========================================================
-   Vector3
+   VECTOR3
 ========================================================= */
 
-export class Vector3 {
+class Vector3 {
 
-    constructor(x = 0, y = 0, z = 0) {
-        this.x = x;
-        this.y = y;
-        this.z = z;
+    constructor(x, y, z) {
+
+        this.x = x || 0;
+        this.y = y || 0;
+        this.z = z || 0;
     }
 
     set(x, y, z) {
+
         this.x = x;
         this.y = y;
         this.z = z;
+
         return this;
     }
 
     copy(v) {
+
         this.x = v.x;
         this.y = v.y;
         this.z = v.z;
+
         return this;
     }
 
     clone() {
-        return new Vector3(this.x, this.y, this.z);
+
+        return new Vector3(
+            this.x,
+            this.y,
+            this.z
+        );
     }
 
     add(v) {
+
         this.x += v.x;
         this.y += v.y;
         this.z += v.z;
+
         return this;
     }
 
     sub(v) {
+
         this.x -= v.x;
         this.y -= v.y;
         this.z -= v.z;
+
         return this;
     }
 
-    multiplyScalar(v) {
-        this.x *= v;
-        this.y *= v;
-        this.z *= v;
+    multiplyScalar(n) {
+
+        this.x *= n;
+        this.y *= n;
+        this.z *= n;
+
         return this;
     }
 
     length() {
-        return Math.hypot(this.x, this.y, this.z);
+
+        return Math.sqrt(
+            this.x * this.x +
+            this.y * this.y +
+            this.z * this.z
+        );
     }
 
     normalize() {
-        const l = this.length();
 
-        if (l > 0) {
-            this.multiplyScalar(1 / l);
+        const length = this.length();
+
+        if (length > 0) {
+
+            this.x /= length;
+            this.y /= length;
+            this.z /= length;
         }
 
         return this;
     }
 
     distanceTo(v) {
-        return Math.hypot(
-            this.x - v.x,
-            this.y - v.y,
-            this.z - v.z
+
+        return Math.sqrt(
+            (this.x - v.x) ** 2 +
+            (this.y - v.y) ** 2 +
+            (this.z - v.z) ** 2
         );
     }
 }
 
 
 /* =========================================================
-   Matrix4
+   MATRIX4
 ========================================================= */
 
-export class Matrix4 {
+class Matrix4 {
 
     constructor() {
-        this.elements = new Float32Array(16);
+
+        this.elements =
+            new Float32Array(16);
+
         this.identity();
     }
 
@@ -106,155 +140,31 @@ export class Matrix4 {
         return this;
     }
 
-    copy(m) {
-        this.elements.set(m.elements);
-        return this;
-    }
-
     multiply(a, b) {
 
         const ae = a.elements;
         const be = b.elements;
         const te = this.elements;
 
-        const a00 = ae[0];
-        const a01 = ae[1];
-        const a02 = ae[2];
-        const a03 = ae[3];
+        for (let row = 0; row < 4; row++) {
 
-        const a10 = ae[4];
-        const a11 = ae[5];
-        const a12 = ae[6];
-        const a13 = ae[7];
+            for (let col = 0; col < 4; col++) {
 
-        const a20 = ae[8];
-        const a21 = ae[9];
-        const a22 = ae[10];
-        const a23 = ae[11];
+                te[col * 4 + row] =
 
-        const a30 = ae[12];
-        const a31 = ae[13];
-        const a32 = ae[14];
-        const a33 = ae[15];
+                    ae[0 * 4 + row] *
+                    be[col * 4 + 0] +
 
-        const b0 = be[0];
-        const b1 = be[1];
-        const b2 = be[2];
-        const b3 = be[3];
+                    ae[1 * 4 + row] *
+                    be[col * 4 + 1] +
 
-        te[0] =
-            a00 * b0 +
-            a10 * b1 +
-            a20 * b2 +
-            a30 * b3;
+                    ae[2 * 4 + row] *
+                    be[col * 4 + 2] +
 
-        te[1] =
-            a01 * b0 +
-            a11 * b1 +
-            a21 * b2 +
-            a31 * b3;
-
-        te[2] =
-            a02 * b0 +
-            a12 * b1 +
-            a22 * b2 +
-            a32 * b3;
-
-        te[3] =
-            a03 * b0 +
-            a13 * b1 +
-            a23 * b2 +
-            a33 * b3;
-
-
-        b0 = be[4];
-        b1 = be[5];
-        b2 = be[6];
-        b3 = be[7];
-
-        te[4] =
-            a00 * b0 +
-            a10 * b1 +
-            a20 * b2 +
-            a30 * b3;
-
-        te[5] =
-            a01 * b0 +
-            a11 * b1 +
-            a21 * b2 +
-            a31 * b3;
-
-        te[6] =
-            a02 * b0 +
-            a12 * b1 +
-            a22 * b2 +
-            a32 * b3;
-
-        te[7] =
-            a03 * b0 +
-            a13 * b1 +
-            a23 * b2 +
-            a33 * b3;
-
-
-        b0 = be[8];
-        b1 = be[9];
-        b2 = be[10];
-        b3 = be[11];
-
-        te[8] =
-            a00 * b0 +
-            a10 * b1 +
-            a20 * b2 +
-            a30 * b3;
-
-        te[9] =
-            a01 * b0 +
-            a11 * b1 +
-            a21 * b2 +
-            a31 * b3;
-
-        te[10] =
-            a02 * b0 +
-            a12 * b1 +
-            a22 * b2 +
-            a32 * b3;
-
-        te[11] =
-            a03 * b0 +
-            a13 * b1 +
-            a23 * b2 +
-            a33 * b3;
-
-
-        b0 = be[12];
-        b1 = be[13];
-        b2 = be[14];
-        b3 = be[15];
-
-        te[12] =
-            a00 * b0 +
-            a10 * b1 +
-            a20 * b2 +
-            a30 * b3;
-
-        te[13] =
-            a01 * b0 +
-            a11 * b1 +
-            a21 * b2 +
-            a31 * b3;
-
-        te[14] =
-            a02 * b0 +
-            a12 * b1 +
-            a22 * b2 +
-            a32 * b3;
-
-        te[15] =
-            a03 * b0 +
-            a13 * b1 +
-            a23 * b2 +
-            a33 * b3;
+                    ae[3 * 4 + row] *
+                    be[col * 4 + 3];
+            }
+        }
 
         return this;
     }
@@ -326,10 +236,18 @@ export class Matrix4 {
         return this;
     }
 
-    perspective(fov, aspect, near, far) {
+    perspective(
+        fov,
+        aspect,
+        near,
+        far
+    ) {
 
         const f =
-            1 / Math.tan(fov * DEG / 2);
+            1 /
+            Math.tan(
+                fov * Math.PI / 360
+            );
 
         const e = this.elements;
 
@@ -354,18 +272,21 @@ export class Matrix4 {
 
 
 /* =========================================================
-   Object3D
+   OBJECT3D
 ========================================================= */
 
-export class Object3D {
+class Object3D {
 
     constructor() {
 
-        this.position = new Vector3();
+        this.position =
+            new Vector3();
 
-        this.rotation = new Vector3();
+        this.rotation =
+            new Vector3();
 
-        this.scale = new Vector3(1, 1, 1);
+        this.scale =
+            new Vector3(1, 1, 1);
 
         this.children = [];
 
@@ -374,29 +295,42 @@ export class Object3D {
         this.visible = true;
     }
 
-    add(...objects) {
+    add() {
 
-        for (const object of objects) {
+        for (
+            let i = 0;
+            i < arguments.length;
+            i++
+        ) {
 
-            if (object.parent) {
-                object.parent.remove(object);
+            const child =
+                arguments[i];
+
+            if (child.parent) {
+                child.parent.remove(child);
             }
 
-            object.parent = this;
-            this.children.push(object);
+            child.parent = this;
+
+            this.children.push(child);
         }
 
         return this;
     }
 
-    remove(object) {
+    remove(child) {
 
-        const i =
-            this.children.indexOf(object);
+        const index =
+            this.children.indexOf(child);
 
-        if (i >= 0) {
-            this.children.splice(i, 1);
-            object.parent = null;
+        if (index !== -1) {
+
+            this.children.splice(
+                index,
+                1
+            );
+
+            child.parent = null;
         }
 
         return this;
@@ -405,39 +339,48 @@ export class Object3D {
 
 
 /* =========================================================
-   Scene
+   SCENE
 ========================================================= */
 
-export class Scene extends Object3D {
+class Scene extends Object3D {
 
     constructor() {
 
         super();
 
-        this.background = 0x050914;
+        this.background =
+            0x050912;
     }
 }
 
 
 /* =========================================================
-   Camera
+   CAMERA
 ========================================================= */
 
-export class PerspectiveCamera extends Object3D {
+class PerspectiveCamera
+    extends Object3D {
 
     constructor(
-        fov = 70,
-        aspect = 1,
-        near = 0.1,
-        far = 1000
+        fov,
+        aspect,
+        near,
+        far
     ) {
 
         super();
 
-        this.fov = fov;
-        this.aspect = aspect;
-        this.near = near;
-        this.far = far;
+        this.fov =
+            fov || 70;
+
+        this.aspect =
+            aspect || 1;
+
+        this.near =
+            near || .1;
+
+        this.far =
+            far || 1000;
 
         this.projectionMatrix =
             new Matrix4();
@@ -458,10 +401,10 @@ export class PerspectiveCamera extends Object3D {
 
 
 /* =========================================================
-   Geometry
+   GEOMETRY
 ========================================================= */
 
-export class Geometry {
+class Geometry {
 
     constructor() {
 
@@ -471,11 +414,19 @@ export class Geometry {
 }
 
 
-export class BoxGeometry extends Geometry {
+/* =========================================================
+   BOX
+========================================================= */
 
-    constructor(w = 1, h = 1, d = 1) {
+class BoxGeometry extends Geometry {
+
+    constructor(w, h, d) {
 
         super();
+
+        w = w || 1;
+        h = h || 1;
+        d = d || 1;
 
         const x = w / 2;
         const y = h / 2;
@@ -518,20 +469,29 @@ export class BoxGeometry extends Geometry {
 }
 
 
-export class PlaneGeometry extends Geometry {
+/* =========================================================
+   PLANE
+========================================================= */
 
-    constructor(w = 1, d = 1) {
+class PlaneGeometry
+    extends Geometry {
+
+    constructor(w, d) {
 
         super();
+
+        w = w || 1;
+        d = d || 1;
 
         const x = w / 2;
         const z = d / 2;
 
         this.vertices = [
-            -x,0,-z,
-             x,0,-z,
-             x,0, z,
-            -x,0, z
+
+            -x, 0, -z,
+             x, 0, -z,
+             x, 0,  z,
+            -x, 0,  z
         ];
 
         this.indices = [
@@ -542,15 +502,30 @@ export class PlaneGeometry extends Geometry {
 }
 
 
-export class SphereGeometry extends Geometry {
+/* =========================================================
+   SPHERE
+========================================================= */
+
+class SphereGeometry
+    extends Geometry {
 
     constructor(
-        radius = 1,
-        widthSegments = 16,
-        heightSegments = 10
+        radius,
+        widthSegments,
+        heightSegments
     ) {
 
         super();
+
+        radius =
+            radius || 1;
+
+        widthSegments =
+            widthSegments || 16;
+
+        heightSegments =
+            heightSegments || 10;
+
 
         for (
             let y = 0;
@@ -576,25 +551,22 @@ export class SphereGeometry extends Geometry {
                 const theta =
                     u * Math.PI * 2;
 
-                const sx =
-                    -radius *
-                    Math.cos(theta) *
-                    Math.sin(phi);
-
-                const sy =
-                    radius *
-                    Math.cos(phi);
-
-                const sz =
-                    radius *
-                    Math.sin(theta) *
-                    Math.sin(phi);
-
                 this.vertices.push(
-                    sx, sy, sz
+
+                    radius *
+                    Math.sin(phi) *
+                    Math.cos(theta),
+
+                    radius *
+                    Math.cos(phi),
+
+                    radius *
+                    Math.sin(phi) *
+                    Math.sin(theta)
                 );
             }
         }
+
 
         for (
             let y = 0;
@@ -609,13 +581,24 @@ export class SphereGeometry extends Geometry {
             ) {
 
                 const a =
-                    y * (widthSegments + 1) + x;
+                    y *
+                    (widthSegments + 1) +
+                    x;
 
-                const b = a + widthSegments + 1;
+                const b =
+                    a +
+                    widthSegments +
+                    1;
 
                 this.indices.push(
-                    a, b, a + 1,
-                    b, b + 1, a + 1
+
+                    a,
+                    b,
+                    a + 1,
+
+                    b,
+                    b + 1,
+                    a + 1
                 );
             }
         }
@@ -623,24 +606,40 @@ export class SphereGeometry extends Geometry {
 }
 
 
-export class CylinderGeometry extends Geometry {
+/* =========================================================
+   CYLINDER
+========================================================= */
+
+class CylinderGeometry
+    extends Geometry {
 
     constructor(
-        radius = 1,
-        height = 2,
-        segments = 16
+        radius,
+        height,
+        segments
     ) {
 
         super();
 
+        radius =
+            radius || 1;
+
+        height =
+            height || 2;
+
+        segments =
+            segments || 16;
+
+
         for (
-            let y = 0;
-            y <= 1;
-            y++
+            let row = 0;
+            row <= 1;
+            row++
         ) {
 
-            const py =
-                (y - .5) * height;
+            const y =
+                (row - .5) *
+                height;
 
             for (
                 let i = 0;
@@ -649,15 +648,20 @@ export class CylinderGeometry extends Geometry {
             ) {
 
                 const a =
-                    i / segments * Math.PI * 2;
+                    i /
+                    segments *
+                    Math.PI *
+                    2;
 
                 this.vertices.push(
+
                     Math.cos(a) * radius,
-                    py,
+                    y,
                     Math.sin(a) * radius
                 );
             }
         }
+
 
         for (
             let i = 0;
@@ -666,46 +670,19 @@ export class CylinderGeometry extends Geometry {
         ) {
 
             const a = i;
-            const b = i + segments + 1;
+
+            const b =
+                i + segments + 1;
 
             this.indices.push(
-                a, b, a + 1,
-                b, b + 1, a + 1
-            );
-        }
 
-        const bottom =
-            this.vertices.length / 3;
+                a,
+                b,
+                a + 1,
 
-        this.vertices.push(
-            0, -height / 2, 0
-        );
-
-        const top =
-            bottom + 1;
-
-        this.vertices.push(
-            0, height / 2, 0
-        );
-
-        for (
-            let i = 0;
-            i < segments;
-            i++
-        ) {
-
-            const n = i + 1;
-
-            this.indices.push(
-                bottom,
-                n,
-                i
-            );
-
-            this.indices.push(
-                top,
-                segments + 1 + i,
-                segments + 1 + n
+                b,
+                b + 1,
+                a + 1
             );
         }
     }
@@ -713,88 +690,65 @@ export class CylinderGeometry extends Geometry {
 
 
 /* =========================================================
-   Material
+   MATERIAL
 ========================================================= */
 
-export class MeshBasicMaterial {
+class MeshBasicMaterial {
 
-    constructor(options = {}) {
+    constructor(options) {
+
+        options =
+            options || {};
 
         this.color =
-            options.color ?? 0xffffff;
-
-        this.opacity =
-            options.opacity ?? 1;
+            options.color === undefined
+                ? 0xffffff
+                : options.color;
     }
 }
 
 
 /* =========================================================
-   Mesh / Group
+   MESH
 ========================================================= */
 
-export class Mesh extends Object3D {
+class Mesh extends Object3D {
 
-    constructor(geometry, material) {
+    constructor(
+        geometry,
+        material
+    ) {
 
         super();
 
-        this.geometry = geometry;
+        this.geometry =
+            geometry;
 
         this.material =
-            material ??
+            material ||
             new MeshBasicMaterial();
     }
 }
 
 
-export class Group extends Object3D {
+/* =========================================================
+   GROUP
+========================================================= */
+
+class Group extends Object3D {
 
     constructor() {
+
         super();
     }
 }
 
 
 /* =========================================================
-   Lights
+   RENDERER
 ========================================================= */
 
-export class AmbientLight extends Object3D {
-
-    constructor(
-        color = 0xffffff,
-        intensity = 1
-    ) {
-
-        super();
-
-        this.color = color;
-        this.intensity = intensity;
-    }
-}
-
-
-export class DirectionalLight extends Object3D {
-
-    constructor(
-        color = 0xffffff,
-        intensity = 1
-    ) {
-
-        super();
-
-        this.color = color;
-        this.intensity = intensity;
-    }
-}
-
-
-/* =========================================================
-   Renderer
-========================================================= */
-
-function hexColor(hex) {
+function hexRGB(hex) {
 
     return [
 
@@ -807,54 +761,28 @@ function hexColor(hex) {
 }
 
 
-function shader(gl, type, source) {
+class Renderer {
 
-    const s =
-        gl.createShader(type);
+    constructor(canvas) {
 
-    gl.shaderSource(s, source);
-
-    gl.compileShader(s);
-
-    if (
-        !gl.getShaderParameter(
-            s,
-            gl.COMPILE_STATUS
-        )
-    ) {
-
-        throw new Error(
-            gl.getShaderInfoLog(s)
-        );
-    }
-
-    return s;
-}
-
-
-export class Renderer {
-
-    constructor(canvas, options = {}) {
-
-        this.canvas = canvas;
+        this.canvas =
+            canvas;
 
         this.gl =
             canvas.getContext(
                 "webgl",
                 {
-                    antialias:
-                        options.antialias ?? true,
-
+                    antialias: true,
                     alpha: false,
-
                     powerPreference:
                         "high-performance"
                 }
             );
 
         if (!this.gl) {
+
             throw new Error(
-                "TriZas: WebGL을 사용할 수 없습니다."
+                "WebGL을 사용할 수 없음"
             );
         }
 
@@ -863,43 +791,44 @@ export class Renderer {
         this.program =
             this.createProgram();
 
-        const gl = this.gl;
+        const gl =
+            this.gl;
 
-        this.positionLocation =
+        this.aPosition =
             gl.getAttribLocation(
                 this.program,
                 "aPosition"
             );
 
-        this.matrixLocation =
+        this.uMatrix =
             gl.getUniformLocation(
                 this.program,
                 "uMatrix"
             );
 
-        this.colorLocation =
+        this.uColor =
             gl.getUniformLocation(
                 this.program,
                 "uColor"
             );
 
-        gl.enable(gl.DEPTH_TEST);
+        gl.enable(
+            gl.DEPTH_TEST
+        );
 
-        gl.enable(gl.CULL_FACE);
-
-        gl.cullFace(gl.BACK);
+        gl.enable(
+            gl.CULL_FACE
+        );
     }
 
 
     createProgram() {
 
-        const gl = this.gl;
+        const gl =
+            this.gl;
 
-        const vertex = shader(
-            gl,
-            gl.VERTEX_SHADER,
+        const vertexSource = `
 
-            `
             attribute vec3 aPosition;
 
             uniform mat4 uMatrix;
@@ -908,17 +837,16 @@ export class Renderer {
 
                 gl_Position =
                     uMatrix *
-                    vec4(aPosition, 1.0);
+                    vec4(
+                        aPosition,
+                        1.0
+                    );
             }
-            `
-        );
+        `;
 
 
-        const fragment = shader(
-            gl,
-            gl.FRAGMENT_SHADER,
+        const fragmentSource = `
 
-            `
             precision mediump float;
 
             uniform vec3 uColor;
@@ -926,10 +854,25 @@ export class Renderer {
             void main() {
 
                 gl_FragColor =
-                    vec4(uColor, 1.0);
+                    vec4(
+                        uColor,
+                        1.0
+                    );
             }
-            `
-        );
+        `;
+
+
+        const vertex =
+            this.compile(
+                gl.VERTEX_SHADER,
+                vertexSource
+            );
+
+        const fragment =
+            this.compile(
+                gl.FRAGMENT_SHADER,
+                fragmentSource
+            );
 
 
         const program =
@@ -945,7 +888,10 @@ export class Renderer {
             fragment
         );
 
-        gl.linkProgram(program);
+        gl.linkProgram(
+            program
+        );
+
 
         if (
             !gl.getProgramParameter(
@@ -955,7 +901,9 @@ export class Renderer {
         ) {
 
             throw new Error(
-                gl.getProgramInfoLog(program)
+                gl.getProgramInfoLog(
+                    program
+                )
             );
         }
 
@@ -963,10 +911,49 @@ export class Renderer {
     }
 
 
-    setPixelRatio(value) {
+    compile(type, source) {
+
+        const gl =
+            this.gl;
+
+        const shader =
+            gl.createShader(type);
+
+        gl.shaderSource(
+            shader,
+            source
+        );
+
+        gl.compileShader(
+            shader
+        );
+
+
+        if (
+            !gl.getShaderParameter(
+                shader,
+                gl.COMPILE_STATUS
+            )
+        ) {
+
+            throw new Error(
+                gl.getShaderInfoLog(
+                    shader
+                )
+            );
+        }
+
+        return shader;
+    }
+
+
+    setPixelRatio(ratio) {
 
         this.pixelRatio =
-            Math.max(1, value);
+            Math.max(
+                1,
+                ratio || 1
+            );
     }
 
 
@@ -976,16 +963,14 @@ export class Renderer {
             this.pixelRatio;
 
         this.canvas.width =
-            Math.floor(width * ratio);
+            Math.floor(
+                width * ratio
+            );
 
         this.canvas.height =
-            Math.floor(height * ratio);
-
-        this.canvas.style.width =
-            width + "px";
-
-        this.canvas.style.height =
-            height + "px";
+            Math.floor(
+                height * ratio
+            );
 
         this.gl.viewport(
             0,
@@ -996,16 +981,18 @@ export class Renderer {
     }
 
 
-    createGPUData(mesh) {
+    upload(mesh) {
 
-        const gl = this.gl;
+        const gl =
+            this.gl;
 
-        mesh.__vertexBuffer =
+
+        mesh._vertex =
             gl.createBuffer();
 
         gl.bindBuffer(
             gl.ARRAY_BUFFER,
-            mesh.__vertexBuffer
+            mesh._vertex
         );
 
         gl.bufferData(
@@ -1017,12 +1004,12 @@ export class Renderer {
         );
 
 
-        mesh.__indexBuffer =
+        mesh._index =
             gl.createBuffer();
 
         gl.bindBuffer(
             gl.ELEMENT_ARRAY_BUFFER,
-            mesh.__indexBuffer
+            mesh._index
         );
 
         gl.bufferData(
@@ -1033,49 +1020,56 @@ export class Renderer {
             gl.STATIC_DRAW
         );
 
-        mesh.__indexCount =
+
+        mesh._count =
             mesh.geometry.indices.length;
     }
 
 
     render(scene, camera) {
 
-        const gl = this.gl;
+        const gl =
+            this.gl;
+
 
         gl.clearColor(
-            ...hexColor(scene.background),
+            ...hexRGB(
+                scene.background
+            ),
             1
         );
+
 
         gl.clear(
             gl.COLOR_BUFFER_BIT |
             gl.DEPTH_BUFFER_BIT
         );
 
+
         gl.useProgram(
             this.program
         );
 
 
-        const rx =
+        const cameraX =
             new Matrix4()
                 .rotationX(
                     -camera.rotation.x
                 );
 
-        const ry =
+        const cameraY =
             new Matrix4()
                 .rotationY(
                     -camera.rotation.y
                 );
 
-        const rz =
+        const cameraZ =
             new Matrix4()
                 .rotationZ(
                     -camera.rotation.z
                 );
 
-        const cameraTranslation =
+        const cameraPosition =
             new Matrix4()
                 .translation(
                     -camera.position.x,
@@ -1088,25 +1082,30 @@ export class Renderer {
             new Matrix4();
 
         view.multiply(
-            ry,
-            cameraTranslation
+            cameraY,
+            cameraPosition
         );
 
         view.multiply(
-            rx,
+            cameraX,
             view
         );
 
         view.multiply(
-            rz,
+            cameraZ,
             view
         );
 
 
-        const drawObject =
-            (object, parentWorld = null) => {
+        const draw =
+            (
+                object,
+                parentWorld
+            ) => {
 
-                if (!object.visible) {
+                if (
+                    !object.visible
+                ) {
                     return;
                 }
 
@@ -1114,7 +1113,8 @@ export class Renderer {
                 let world =
                     new Matrix4();
 
-                const translation =
+
+                const position =
                     new Matrix4()
                         .translation(
                             object.position.x,
@@ -1122,23 +1122,27 @@ export class Renderer {
                             object.position.z
                         );
 
-                const rotationY =
-                    new Matrix4()
-                        .rotationY(
-                            object.rotation.y
-                        );
 
-                const rotationX =
+                const rotX =
                     new Matrix4()
                         .rotationX(
                             object.rotation.x
                         );
 
-                const rotationZ =
+
+                const rotY =
+                    new Matrix4()
+                        .rotationY(
+                            object.rotation.y
+                        );
+
+
+                const rotZ =
                     new Matrix4()
                         .rotationZ(
                             object.rotation.z
                         );
+
 
                 const scale =
                     new Matrix4()
@@ -1150,18 +1154,18 @@ export class Renderer {
 
 
                 world.multiply(
-                    translation,
-                    rotationY
+                    position,
+                    rotY
                 );
 
                 world.multiply(
                     world,
-                    rotationX
+                    rotX
                 );
 
                 world.multiply(
                     world,
-                    rotationZ
+                    rotZ
                 );
 
                 world.multiply(
@@ -1180,7 +1184,8 @@ export class Renderer {
                         world
                     );
 
-                    world = combined;
+                    world =
+                        combined;
                 }
 
 
@@ -1188,8 +1193,13 @@ export class Renderer {
                     object instanceof Mesh
                 ) {
 
-                    if (!object.__vertexBuffer) {
-                        this.createGPUData(object);
+                    if (
+                        !object._vertex
+                    ) {
+
+                        this.upload(
+                            object
+                        );
                     }
 
 
@@ -1202,25 +1212,25 @@ export class Renderer {
                     );
 
 
-                    let final =
+                    let finalMatrix =
                         new Matrix4();
 
-                    final.multiply(
+                    finalMatrix.multiply(
                         camera.projectionMatrix,
                         vm
                     );
 
 
                     gl.uniformMatrix4fv(
-                        this.matrixLocation,
+                        this.uMatrix,
                         false,
-                        final.elements
+                        finalMatrix.elements
                     );
 
 
                     gl.uniform3fv(
-                        this.colorLocation,
-                        hexColor(
+                        this.uColor,
+                        hexRGB(
                             object.material.color
                         )
                     );
@@ -1228,15 +1238,17 @@ export class Renderer {
 
                     gl.bindBuffer(
                         gl.ARRAY_BUFFER,
-                        object.__vertexBuffer
+                        object._vertex
                     );
+
 
                     gl.enableVertexAttribArray(
-                        this.positionLocation
+                        this.aPosition
                     );
 
+
                     gl.vertexAttribPointer(
-                        this.positionLocation,
+                        this.aPosition,
                         3,
                         gl.FLOAT,
                         false,
@@ -1247,13 +1259,13 @@ export class Renderer {
 
                     gl.bindBuffer(
                         gl.ELEMENT_ARRAY_BUFFER,
-                        object.__indexBuffer
+                        object._index
                     );
 
 
                     gl.drawElements(
                         gl.TRIANGLES,
-                        object.__indexCount,
+                        object._count,
                         gl.UNSIGNED_SHORT,
                         0
                     );
@@ -1261,54 +1273,65 @@ export class Renderer {
 
 
                 for (
-                    const child of object.children
+                    let i = 0;
+                    i < object.children.length;
+                    i++
                 ) {
 
-                    drawObject(
-                        child,
+                    draw(
+                        object.children[i],
                         world
                     );
                 }
             };
 
 
-        drawObject(scene);
+        draw(scene, null);
     }
 }
 
 
 /* =========================================================
-   Input
+   KEYBOARD
 ========================================================= */
 
-export class Keyboard {
+class Keyboard {
 
     constructor() {
 
-        this.keys = new Set();
+        this.keys = {};
 
-        addEventListener(
+        window.addEventListener(
             "keydown",
-            e => this.keys.add(e.code)
+            e => {
+
+                this.keys[e.code] =
+                    true;
+            }
         );
 
-        addEventListener(
+        window.addEventListener(
             "keyup",
-            e => this.keys.delete(e.code)
+            e => {
+
+                this.keys[e.code] =
+                    false;
+            }
         );
     }
 
     down(code) {
-        return this.keys.has(code);
+
+        return !!this.keys[code];
     }
 }
 
 
 /* =========================================================
-   Clock
+   CLOCK
 ========================================================= */
 
-export class Clock {
+class Clock {
 
     constructor() {
 
@@ -1328,10 +1351,11 @@ export class Clock {
         this.delta =
             Math.min(
                 (now - this.last) / 1000,
-                0.05
+                .05
             );
 
-        this.last = now;
+        this.last =
+            now;
 
         this.elapsed +=
             this.delta;
@@ -1339,3 +1363,38 @@ export class Clock {
         return this.delta;
     }
 }
+
+
+/* =========================================================
+   EXPORT TO GLOBAL
+========================================================= */
+
+global.TriZas = {
+
+    Vector3,
+    Matrix4,
+
+    Object3D,
+    Scene,
+
+    PerspectiveCamera,
+
+    Geometry,
+
+    BoxGeometry,
+    PlaneGeometry,
+    SphereGeometry,
+    CylinderGeometry,
+
+    MeshBasicMaterial,
+
+    Mesh,
+    Group,
+
+    Renderer,
+
+    Keyboard,
+    Clock
+};
+
+})(window);
